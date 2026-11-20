@@ -1,14 +1,23 @@
 #!/usr/bin/env python3
 """Render 'The World in One Day' - Thu 19 Nov 2026 - as a 1024x1024 PNG.
 
-V7 FINAL RENDER (branch v7, from V6 commit 3d5c27c). Binding geometry:
-v7-layout-spec.md. Canvas 1024x1024. Header 0-140 (dominant date
+V7.1 FINAL RENDER (branch v7.1, from V7 commit 3c5ccec). Binding geometry:
+v7.1-layout-spec.md. Canvas 1024x1024. Header 0-140 (dominant date
 masthead + colour-coded region-count strip + stats); 3 heroes ONE row
 145-390 (cards 320x245, illustration panels 318x150 with navy title
 bands, shared baseline y=296); 12 minis 6x2 395-715 (cards 156x156,
 illustration panels IDENTICAL 154x76, each with a black in-image label
 strip and a 1-3 line summary); map + newswire 720-955 (region-colour
 map pins); DATE CHECK box in the footer zone 960-1024.
+
+V7.1 changes vs V7 (documented in v7.1-layout-spec.md): heroes redrawn
+again (bigger distinct faces + hair, sky depth, brick joints, trees,
+globe continents, visible turbine, thicker thermometer, sun dropped);
+one-line IN CONTEXT panel inside the DATE CHECK box; South America
+isthmus widened + Quito badge moved off the land bridge; footer box
+moved up 6px (954) to close the dead band under the newswire. No story
+changed: news.json is byte-identical to V7 (fact recheck 21 Nov
+re-confirmed all 8 high-impact claims; #12/#27 stay CLAIM).
 
 V7 changes vs V6 (documented in v7-layout-spec.md): dominant date
 masthead + region strip; heroes redrawn (faces + nameplates + summit
@@ -259,14 +268,14 @@ GREENLAND = [
 ]
 
 SOUTH_AMERICA = [
-    (-79, 9), (-77, 5), (-79, 1), (-81, -4), (-80, -7), (-77, -11),
+    (-82, 9), (-80, 7), (-77, 5), (-79, 1), (-81, -4), (-80, -7), (-77, -11),
     (-74, -16), (-71, -19), (-70, -23), (-70, -28), (-71, -32), (-72, -37),
     (-73, -42), (-73, -47), (-74, -51), (-71, -54), (-68, -55), (-66, -53),
     (-66, -49), (-64, -44), (-62, -40), (-58, -35), (-55, -34), (-52, -32),
     (-49, -28), (-46, -24), (-42, -22), (-40, -20), (-39, -16), (-37, -13),
     (-35, -9), (-35, -6), (-37, -4), (-40, -3), (-43, -2), (-47, -1),
     (-50, 0), (-52, 2), (-54, 4), (-56, 6), (-59, 8), (-62, 9),
-    (-66, 10), (-69, 11), (-72, 12), (-75, 10), (-77, 8), (-79, 9),
+    (-66, 10), (-69, 11), (-72, 12), (-75, 10), (-76, 9), (-79, 10), (-82, 9),
 ]
 
 # Europe + Asia as one Eurasian landmass (the Europe/Asia boundary is not a
@@ -405,7 +414,10 @@ CONTINENTS = [NORTH_AMERICA, GREENLAND, SOUTH_AMERICA, EURASIA, AFRICA,
 # legend badge instead of a geographic dot. Pin dots use the same
 # equirectangular projection as the outlines (1.0667 px/deg): Nairobi
 # (36.8E, 1.3S) -> (261, 855); Quito (78.5W, 0.2S) -> (138, 854).
-# Pin 4 (New York) nudged to (145, 812), on the coast. Badge offsets
+# Pin 4 (New York) nudged to (145, 812), on the coast. Pin 15 (Quito)
+# badge moved off the isthmus into the Pacific (124, 866) in V7.1:
+# the badge sat on the 3px-wide land bridge and made it read as
+# gapped. Badge offsets
 # keep every pair of badges >=16px apart (checked in test_v7.py).
 PINS = [
     (1, (344, 830), (344, 830), "Asia"),
@@ -421,7 +433,7 @@ PINS = [
     (12, (282, 826), (298, 838), "Middle East"),
     (13, (272, 828), (284, 852), "Middle East"),
     (14, (336, 861), (336, 861), "Asia"),
-    (15, (138, 854), (138, 854), "Latin America"),
+    (15, (138, 854), (124, 866), "Latin America"),
 ]
 
 
@@ -481,14 +493,23 @@ def draw_map(d):
 # + red CUT stamp. Each ends in a navy title band.
 
 def hero_summit(d, x, y, w, h=150):
-    """V7: Shenzhen summit with DISTINCT faces + hair + nameplates.
-    Skyline behind, three flags, peace banner, round table; navy band
-    "APEC 2026 · SHENZHEN" across the bottom 16px of the panel."""
+    """V7.1: Shenzhen summit, redrawn faces. Bigger heads (r=13) with
+    distinct hair (Trump blond sweep, Xi black side-part, Putin grey
+    receding), eyebrows, noses and smiles; wider suits with shirt + tie;
+    far + near skyline layers, birds, lake reflections; same banner,
+    flags, table, nameplates and navy band "APEC 2026 · SHENZHEN"."""
     d.rectangle([x, y, x + w, y + h], fill=PALE_SKY)
-    # background: pale sky + clouds (kept clear of the chip corner)
+    # background: pale sky + clouds + birds (kept clear of the chip corner)
     d.ellipse([x + 90, y + 6, x + 122, y + 16], fill=(255, 255, 255))
     d.ellipse([x + 108, y + 2, x + 140, y + 12], fill=(255, 255, 255))
     d.ellipse([x + 240, y + 10, x + 268, y + 20], fill=(255, 255, 255))
+    for bx, by in ((x + 58, y + 24), (x + 276, y + 32)):
+        d.line([bx - 5, by, bx, by - 3, bx + 5, by], fill=(90, 110, 130), width=1)
+    # far skyline layer (paler, taller) for depth, behind the near layer
+    far = (150, 170, 190)
+    for tx, ty, bx in [(18, 36, 34), (52, 22, 70), (96, 28, 112), (150, 18, 168),
+                       (196, 26, 212), (232, 20, 250), (272, 30, 290)]:
+        d.rectangle([x + tx, y + ty, x + bx, y + 70], fill=far)
     # midground: Shenzhen skyline silhouettes (tapered Ping An-style tower)
     sky = (120, 145, 168)
     sky2 = (96, 122, 148)
@@ -502,16 +523,17 @@ def hero_summit(d, x, y, w, h=150):
     d.polygon([(x + 126, y + 70), (x + 130, y + 10), (x + 140, y + 10),
                (x + 144, y + 70)], fill=sky2)
     d.polygon([(x + 130, y + 10), (x + 135, y + 0), (x + 140, y + 10)], fill=sky2)
-    # lit windows on the skyline
+    # lit windows on the near skyline only
     for wx in range(x + 12, x + w - 10, 14):
         for wy in (y + 34, y + 44, y + 54, y + 62):
             d.rectangle([wx, wy, wx + 3, wy + 4], fill=(255, 240, 180))
-    # hills + lake
+    # hills + lake with reflections
     d.polygon([(x, y + 96), (x + 80, y + 70), (x + 160, y + 96)], fill=(110, 145, 105))
     d.polygon([(x + 150, y + 96), (x + 240, y + 68), (x + w, y + 96)], fill=(96, 132, 94))
     d.rectangle([x, y + 96, x + w, y + 112], fill=(140, 175, 200))
     d.line([x + 16, y + 102, x + 90, y + 102], fill=(200, 225, 240), width=1)
     d.line([x + 200, y + 106, x + 300, y + 106], fill=(200, 225, 240), width=1)
+    d.line([x + 110, y + 99, x + 150, y + 99], fill=(200, 225, 240), width=1)
     # three flags on poles, behind the banner
     poles = [x + 24, x + 136, x + 248]
     for px, code in zip(poles, ["US", "CN", "RU"]):
@@ -541,27 +563,46 @@ def hero_summit(d, x, y, w, h=150):
     bf = font(SANS_B, 13)
     t = "DECLARATION TOWARD PEACE"
     d.text((x + w // 2 - bf.getlength(t) / 2, y + 63), t, font=bf, fill=RED)
-    # foreground: three seated leaders with distinct faces, hair, ties
+    # foreground: three seated leaders with bigger, distinct faces
+    # (suit, skin, hair, tie, name, hair style)
     leaders = [(x + 70, (30, 30, 40), (232, 190, 150), (235, 205, 90),
-                (178, 34, 52), "TRUMP"),
+                (178, 34, 52), "TRUMP", "swept"),
                (x + w // 2, (40, 30, 30), (240, 200, 160), (25, 25, 25),
-                (120, 20, 20), "XI"),
+                (120, 20, 20), "XI", "neat"),
                (x + w - 70, (30, 38, 50), (225, 185, 145), (178, 178, 178),
-                (0, 57, 166), "PUTIN")]
-    for cx, suit, skin, hair, tie, name in leaders:
-        # hair: top half of the head
-        d.pieslice([cx - 9, y + 78, cx + 9, y + 94], 180, 360, fill=hair)
-        d.ellipse([cx - 9, y + 80, cx + 9, y + 98], fill=skin)
-        d.pieslice([cx - 9, y + 78, cx + 9, y + 92], 180, 360, fill=hair)
-        # eyes + smile
-        d.ellipse([cx - 4, y + 87, cx - 2, y + 89], fill=DARK)
-        d.ellipse([cx + 2, y + 87, cx + 4, y + 89], fill=DARK)
-        d.arc([cx - 4, y + 89, cx + 4, y + 95], 0, 180, fill=DARK, width=1)
-        # suit + shirt + tie (table covers below y+104)
-        d.polygon([(cx - 15, y + 118), (cx - 12, y + 98), (cx + 12, y + 98),
-                   (cx + 15, y + 118)], fill=suit)
-        d.polygon([(cx - 3, y + 98), (cx, y + 104), (cx + 3, y + 98)], fill=(255, 255, 255))
-        d.polygon([(cx - 2, y + 99), (cx + 2, y + 99), (cx, y + 106)], fill=tie)
+                (0, 57, 166), "PUTIN", "receding")]
+    for cx, suit, skin, hair, tie, name, hstyle in leaders:
+        # ears
+        d.ellipse([cx - 15, y + 88, cx - 11, y + 97], fill=skin)
+        d.ellipse([cx + 11, y + 88, cx + 15, y + 97], fill=skin)
+        # head (r=13; was 9 in V7)
+        d.ellipse([cx - 13, y + 79, cx + 13, y + 105], fill=skin)
+        # hair, distinct per leader
+        if hstyle == "swept":  # Trump: blond swept fringe
+            d.pieslice([cx - 13, y + 79, cx + 13, y + 96], 180, 360, fill=hair)
+            d.polygon([(cx - 13, y + 90), (cx - 4, y + 80), (cx + 13, y + 83),
+                       (cx + 13, y + 89), (cx + 2, y + 86)], fill=hair)
+        elif hstyle == "neat":  # Xi: black, straight fringe, side part
+            d.pieslice([cx - 13, y + 79, cx + 13, y + 94], 180, 360, fill=hair)
+            d.rectangle([cx - 13, y + 88, cx + 13, y + 92], fill=hair)
+            d.line([cx + 5, y + 80, cx + 5, y + 91], fill=(60, 60, 60), width=1)
+        else:  # Putin: grey, receding (side patches + thin top arc only)
+            d.arc([cx - 13, y + 79, cx + 13, y + 96], 180, 360, fill=hair, width=4)
+            d.pieslice([cx - 13, y + 84, cx - 6, y + 97], 180, 270, fill=hair)
+            d.pieslice([cx + 6, y + 84, cx + 13, y + 97], 270, 360, fill=hair)
+        # eyebrows, eyes, nose, smile
+        d.line([cx - 8, y + 92, cx - 3, y + 91], fill=DARK, width=1)
+        d.line([cx + 3, y + 91, cx + 8, y + 92], fill=DARK, width=1)
+        d.ellipse([cx - 6, y + 94, cx - 3, y + 97], fill=DARK)
+        d.ellipse([cx + 3, y + 94, cx + 6, y + 97], fill=DARK)
+        d.line([cx, y + 95, cx - 1, y + 100], fill=(180, 140, 110), width=1)
+        d.arc([cx - 5, y + 98, cx + 5, y + 105], 0, 180, fill=DARK, width=2)
+        # neck + wider suit shoulders + shirt + tie (table covers below y+104)
+        d.rectangle([cx - 4, y + 103, cx + 4, y + 108], fill=skin)
+        d.polygon([(cx - 20, y + 118), (cx - 16, y + 104), (cx + 16, y + 104),
+                   (cx + 20, y + 118)], fill=suit)
+        d.polygon([(cx - 4, y + 104), (cx, y + 111), (cx + 4, y + 104)], fill=(255, 255, 255))
+        d.polygon([(cx - 3, y + 105), (cx + 3, y + 105), (cx, y + 113)], fill=tie)
     # foreground: big round table (flattened to end above the navy band)
     d.ellipse([x + 36, y + 108, x + w - 36, y + 132], fill=(122, 74, 44))
     d.ellipse([x + 36, y + 104, x + w - 36, y + 118], fill=(178, 120, 72))
@@ -572,7 +613,7 @@ def hero_summit(d, x, y, w, h=150):
         d.line([px + 3, y + 116, px + 20, y + 116], fill=(150, 150, 150), width=1)
     # nameplates on the table front
     nf = font(SANS_B, 8)
-    for cx, _, _, _, _, name in leaders:
+    for cx, _, _, _, _, name, _ in leaders:
         d.rectangle([cx - 24, y + 119, cx + 24, y + 131], fill=(255, 255, 255),
                     outline=INK, width=1)
         d.text((cx - nf.getlength(name) / 2, y + 121), name, font=nf, fill=INK)
@@ -584,13 +625,19 @@ def hero_summit(d, x, y, w, h=150):
            fill=(255, 255, 255))
 
 
-
 def hero_icj(d, x, y, w, h=150):
-    """V7: Peace Palace, The Hague — red-brick building with pitched
-    roofs, central clock tower, arched windows, Myanmar flag, small
-    scales of justice in front, red 9-6 badge, navy band
-    "WORLD COURT · THE HAGUE"."""
+    """V7.1: Peace Palace, The Hague — redrawn for depth. Pale sky band
+    + clouds behind the roofline; brick courses with staggered vertical
+    joints; trees flanking the building; robed figures moved clear of
+    the scales, with white collars and red sashes; lawn strip at the
+    base. Same clock tower, arched windows, Myanmar flag, scales, red
+    9-6 badge, navy band "WORLD COURT · THE HAGUE"."""
     d.rectangle([x, y, x + w, y + h], fill=(238, 228, 205))
+    # sky band + clouds behind the roofline
+    d.rectangle([x, y, x + w, y + 46], fill=(205, 222, 235))
+    d.ellipse([x + 210, y + 8, x + 238, y + 16], fill=(255, 255, 255))
+    d.ellipse([x + 224, y + 4, x + 252, y + 12], fill=(255, 255, 255))
+    d.ellipse([x + 84, y + 14, x + 106, y + 21], fill=(255, 255, 255))
     # Myanmar flag, left (green / yellow / red + white star)
     d.line([x + 34, y + 18, x + 34, y + 72], fill=DARK, width=2)
     d.ellipse([x + 32, y + 16, x + 36, y + 20], fill=GOLD)
@@ -603,9 +650,13 @@ def hero_icj(d, x, y, w, h=150):
     d.polygon([(x + 30, y + 54), (x + w // 2, y + 30), (x + w - 30, y + 54)],
               fill=(120, 60, 50))
     d.rectangle([x + 30, y + 54, x + w - 30, y + 58], fill=(240, 230, 210))
-    # brick courses
-    for by in range(y + 62, y + 116, 8):
+    # brick courses with staggered vertical joints (windows / tower /
+    # door are drawn after and cover the joints behind them)
+    for j, by in enumerate(range(y + 62, y + 116, 8)):
         d.line([x + 30, by, x + w - 30, by], fill=(170, 112, 82), width=1)
+        off = 8 if j % 2 else 0
+        for vx in range(x + 30 + off, x + w - 30, 16):
+            d.line([vx, by, vx, by + 8], fill=(170, 112, 82), width=1)
     # arched windows (white frame, dark arch)
     for cx in (x + 64, x + 104, x + 214, x + 254):
         d.rectangle([cx - 11, y + 70, cx + 11, y + 102], fill=(240, 230, 210))
@@ -628,16 +679,27 @@ def hero_icj(d, x, y, w, h=150):
         d.rectangle([x + 152, wy, x + 166, wy + 14], fill=(70, 55, 48))
     # door at the tower base
     d.rectangle([x + 148, y + 94, x + 170, y + 118], fill=(70, 55, 48))
+    # lawn strip at the base (steps drawn over it)
+    d.rectangle([x, y + 130, x + w, y + 134], fill=(110, 160, 110))
     # steps
     d.rectangle([x + w // 2 - 110, y + 118, x + w // 2 + 110, y + 124],
                 fill=(200, 190, 164))
     d.rectangle([x + w // 2 - 125, y + 124, x + w // 2 + 125, y + 130],
                 fill=(188, 178, 152))
-    # small robed figures flanking the scales
-    for fx in (x + 92, x + w - 92):
-        d.ellipse([fx - 7, y + 98, fx + 7, y + 112], fill=(232, 190, 150))
-        d.polygon([(fx - 12, y + 132), (fx - 9, y + 112), (fx + 9, y + 112),
-                   (fx + 12, y + 132)], fill=(40, 40, 48))
+    # trees flanking the building
+    for tx in (x + 14, x + w - 14):
+        d.line([tx, y + 108, tx, y + 122], fill=(90, 60, 40), width=3)
+        d.ellipse([tx - 9, y + 92, tx + 9, y + 110], fill=(70, 130, 70))
+        d.ellipse([tx - 6, y + 86, tx + 6, y + 98], fill=(90, 150, 90))
+    # small robed figures flanking the scales, moved clear of the pans,
+    # with white collars and red sashes
+    for fx in (x + 80, x + w - 80):
+        d.ellipse([fx - 6, y + 99, fx + 6, y + 111], fill=(232, 190, 150))
+        d.polygon([(fx - 11, y + 132), (fx - 8, y + 111), (fx + 8, y + 111),
+                   (fx + 11, y + 132)], fill=(40, 40, 48))
+        d.polygon([(fx - 3, y + 111), (fx, y + 117), (fx + 3, y + 111)],
+                  fill=(255, 255, 255))
+        d.line([fx - 8, y + 116, fx + 8, y + 126], fill=RED, width=2)
     # scales of justice, smaller, centre foreground
     cx = x + w // 2
     d.rectangle([cx - 16, y + 124, cx + 16, y + 129], fill=GOLD)
@@ -665,27 +727,29 @@ def hero_icj(d, x, y, w, h=150):
            fill=(255, 255, 255))
 
 
-
 def hero_cop31(d, x, y, w, h=150):
-    """V7: COP31 landscape — draft document with FOSSIL FUELS struck
-    through + red CUT stamp, globe + leaf, red thermometer, wind
-    turbine on the hills, navy band "COP31 · ANTALYA"."""
+    """V7.1: COP31 landscape, redrawn. Two hill layers + a tree; the wind
+    turbine is moved clear of the thermometer (tall, dark slate, right
+    of the globe); the globe is redrawn with recognisable continents
+    and a small leaf sprout; the thermometer is thicker (16px tube,
+    10px fill, bigger bulb, ticks + °C label); the sun is dropped (it
+    collided with the VERIFIED chip) and a cloud takes its place. Same
+    document with struck-through FOSSIL FUELS / $120bn target, red CUT
+    stamp, navy band "COP31 · ANTALYA"."""
     d.rectangle([x, y, x + w, y + h], fill=(214, 232, 220))
-    # sun, top-right
-    d.ellipse([x + w - 44, y + 6, x + w - 16, y + 34], fill=(255, 220, 120))
-    # hills along the bottom (behind document and globe)
-    d.polygon([(x, y + 118), (x + 120, y + 104), (x + 200, y + 118),
-               (x + w, y + 108), (x + w, y + 134), (x, y + 134)],
+    # cloud, top-centre-right (clear of the VERIFIED chip)
+    d.ellipse([x + 196, y + 8, x + 220, y + 16], fill=(255, 255, 255))
+    d.ellipse([x + 210, y + 4, x + 234, y + 12], fill=(255, 255, 255))
+    # hills: back + front layers (behind document and globe)
+    d.polygon([(x, y + 116), (x + 90, y + 100), (x + 180, y + 114),
+               (x + 260, y + 102), (x + w, y + 112), (x + w, y + 134),
+               (x, y + 134)], fill=(125, 165, 120))
+    d.polygon([(x, y + 124), (x + 110, y + 112), (x + 210, y + 122),
+               (x + w, y + 114), (x + w, y + 134), (x, y + 134)],
               fill=(150, 185, 140))
-    # wind turbine on the right hill (grey-blue, not white: white on the
-    # pale sky was barely visible in V6)
-    tx = x + w - 26
-    d.line([tx, y + 96, tx, y + 130], fill=(120, 130, 140), width=3)
-    for ang in (90, 210, 330):
-        a = math.radians(ang)
-        d.line([tx, y + 96, tx + 14 * math.cos(a), y + 96 + 14 * math.sin(a)],
-               fill=(120, 130, 140), width=3)
-    d.ellipse([tx - 3, y + 93, tx + 3, y + 99], fill=(120, 130, 140))
+    # small tree on the front hill, left of the globe
+    d.line([x + 200, y + 102, x + 200, y + 118], fill=(90, 60, 40), width=2)
+    d.ellipse([x + 193, y + 92, x + 207, y + 104], fill=(70, 130, 70))
     # draft document, left
     dx, dy, dw, dh = x + 14, y + 10, 176, 110
     d.rectangle([dx, dy, dx + dw, dy + dh], fill=(255, 255, 255),
@@ -705,27 +769,42 @@ def hero_cop31(d, x, y, w, h=150):
     d.text((dx + 10, dy + 84), t2, font=sf, fill=(120, 120, 120))
     d.line([dx + 6, dy + 91, dx + 14 + sf.getlength(t2), dy + 91], fill=RED, width=3)
     d.text((dx + 10, dy + 100), "talks run to Friday", font=font(SANS, 11), fill=MUTED)
-    # globe, right of the document
-    gx, gy, gr = x + 228, y + 64, 30
+    # globe, right of the document: recognisable continents
+    gx, gy, gr = x + 222, y + 62, 26
     d.ellipse([gx - gr, gy - gr, gx + gr, gy + gr], fill=SEA)
-    d.ellipse([gx - 24, gy - 26, gx - 2, gy - 6], fill=GREEN)
-    d.ellipse([gx - 8, gy + 2, gx + 22, gy + 24], fill=GREEN)
-    d.ellipse([gx + 12, gy - 26, gx + 26, gy - 10], fill=GREEN)
+    # Americas (west) + Eurasia (east) + Africa (south-east)
+    d.polygon([(gx - 18, gy - 16), (gx - 10, gy - 18), (gx - 8, gy - 8),
+               (gx - 12, gy + 4), (gx - 16, gy + 12), (gx - 20, gy + 2)],
+              fill=GREEN)
+    d.polygon([(gx + 2, gy - 18), (gx + 14, gy - 20), (gx + 18, gy - 10),
+               (gx + 10, gy - 2), (gx + 2, gy - 8)], fill=GREEN)
+    d.ellipse([gx + 4, gy + 6, gx + 16, gy + 20], fill=GREEN)
     d.arc([gx - gr, gy - gr, gx + gr, gy + gr], start=90, end=270,
           fill=(255, 255, 255), width=2)
     d.ellipse([gx - gr, gy - gr, gx + gr, gy + gr], outline=(255, 255, 255), width=2)
-    # leaf overlapping the globe
-    d.polygon([(gx - 34, gy + 22), (gx - 16, gy - 2), (gx + 2, gy + 20)],
+    # small leaf sprout at the globe's lower-left
+    d.polygon([(gx - 30, gy + 20), (gx - 20, gy + 6), (gx - 12, gy + 20)],
               fill=TEAL)
-    d.line([gx - 30, gy + 18, gx - 2, gy + 10], fill=(255, 255, 255), width=2)
-    # red thermometer, far right
-    d.rectangle([x + 274, y + 26, x + 286, y + 108], fill=(255, 255, 255),
+    d.line([gx - 26, gy + 17, gx - 16, gy + 12], fill=(255, 255, 255), width=1)
+    # wind turbine, right of the globe (dark slate, tall; was hidden
+    # behind the thermometer in V7)
+    tx = x + 268
+    d.line([tx, y + 70, tx, y + 120], fill=(90, 100, 115), width=4)
+    for ang in (270, 30, 150):
+        a = math.radians(ang)
+        d.line([tx, y + 70, tx + 15 * math.cos(a), y + 70 + 15 * math.sin(a)],
+               fill=(90, 100, 115), width=4)
+    d.ellipse([tx - 4, y + 66, tx + 4, y + 74], fill=(90, 100, 115))
+    # red thermometer, far right: thicker tube + fill + bulb (was thin
+    # and low-contrast in V7)
+    d.rectangle([x + 292, y + 26, x + 308, y + 108], fill=(255, 255, 255),
                 outline=INK, width=1)
-    d.rectangle([x + 277, y + 60, x + 283, y + 108], fill=RED)
-    d.ellipse([x + 271, y + 103, x + 289, y + 121], fill=RED,
+    d.rectangle([x + 295, y + 58, x + 305, y + 108], fill=RED)
+    d.ellipse([x + 289, y + 103, x + 311, y + 121], fill=RED,
               outline=(255, 255, 255), width=1)
     for ty in (36, 48, 60, 72, 84, 96):
-        d.line([x + 286, y + ty, x + 292, y + ty], fill=INK, width=1)
+        d.line([x + 308, y + ty, x + 314, y + ty], fill=INK, width=1)
+    d.text((x + 294, y + 123), "°C", font=font(SANS, 8), fill=MUTED)
     # red CUT stamp, rotated, over the document corner
     stamp = Image.new("RGBA", (70, 30), (0, 0, 0, 0))
     sd = ImageDraw.Draw(stamp)
@@ -1312,18 +1391,30 @@ def main():
 
     # ---- Section E: footer (960-1024). V7: the date check is a bold
     # red-bordered box, not small grey footer text.
-    d.rectangle([MARGIN, 960, W - MARGIN, 1008], fill=CARD, outline=RED, width=2)
+    d.rectangle([MARGIN, 954, W - MARGIN, 1008], fill=CARD, outline=RED, width=2)
     tf = font(SANS_B, 11)
-    d.text((MARGIN + 10, 964), "DATE CHECK", font=tf, fill=RED)
+    d.text((MARGIN + 10, 958), "DATE CHECK", font=tf, fill=RED)
     _cx = MARGIN + 10 + int(tf.getlength("DATE CHECK")) + 6
-    d.line([_cx, 970, _cx + 4, 975, _cx + 10, 966], fill=RED, width=2)
+    d.line([_cx, 964, _cx + 4, 969, _cx + 10, 960], fill=RED, width=2)
     ff = font(SANS, 9)
-    d.text((MARGIN + 10, 978),
+    d.text((MARGIN + 10, 972),
            "Every story here happened or was first reported Thu 19 Nov 2026. Left out as other days' news:",
            font=ff, fill=INK)
-    d.text((MARGIN + 10, 990),
+    d.text((MARGIN + 10, 984),
            "Van Gogh sale \u00b7 IAEA Yongbyon \u00b7 US\u2013Venezuela pact \u00b7 EU loan plan \u00b7 Taiz crisis \u00b7 "
            "US carrier departure \u00b7 Kuwait/Bahrain drones (all Wed 18 Nov).",
+           font=ff, fill=INK)
+    # V7.1 editorial intelligence: one compact IN CONTEXT line inside the
+    # DATE CHECK box (the only slack on the page; no story cut, no section
+    # shrunk). All three "firsts" are verified by the V7.1 fact recheck:
+    # first three-way US-Russia-China summit (White House), first state
+    # held responsible for genocide (ICJ 9-6), largest IPO on record
+    # (Anthropic $81.3bn, multiple wires).
+    bf = font(SANS_B, 9)
+    ctx_label = "IN CONTEXT: "
+    d.text((MARGIN + 10, 996), ctx_label, font=bf, fill=RED)
+    d.text((MARGIN + 10 + int(bf.getlength(ctx_label)), 996),
+           "a day of firsts \u2014 the first three-way US\u2013Russia\u2013China summit; the first state held responsible for genocide; the largest IPO on record.",
            font=ff, fill=INK)
     f1 = ("Sources: Reuters \u00b7 AP \u00b7 White House \u00b7 ICJ \u00b7 WSJ \u00b7 CNN \u00b7 GOV.UK \u00b7 national wires.  "
           "CLAIM = unverified claim, never fact. All 35 stories happened or were first reported Thu 19 Nov 2026.")
