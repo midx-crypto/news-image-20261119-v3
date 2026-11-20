@@ -1,0 +1,26 @@
+FINAL DECISION: Build and submit V8 using Cinematic Editorial Atlas (Prototype A) as the primary design.
+
+I prefer A over B because of its stronger visual identity, editorial storytelling, and immediate visual impact.
+
+Use A as the foundation, NOT a 50/50 hybrid.
+
+Final refinements:
+
+1. Preserve A's teal-to-navy ocean gradients, cinematic cartography, gold compass rose, and illustrated event callouts.
+2. Borrow B's geographic precision and Middle East inset where useful without overcrowding the map.
+3. Fix the summit illustration's black silhouettes and ensure all illustrated callouts remain recognizable at native resolution.
+4. Preserve all 35 stories, accurate geographic markers, citations, CLAIM labels, and original factual content.
+5. Ensure every map annotation is readable, connected to the correct location, and does not obscure important geography.
+6. Keep the existing V8 newspaper design outside the map unchanged.
+7. Run the official bounty checks, factual-integrity checks, visual QA, deterministic render verification, and provenance validation.
+8. If the new map causes critical failures or cannot be validated in time, revert to the previously validated V8 candidate.
+
+SUBMISSION AUTHORIZED.
+
+Once the final V8 passes all mandatory checks, submit it directly to make.fun without waiting for further approval.
+
+Do not start another design exploration or unnecessary iteration.
+
+After submission, report the submission ID, server score, leaderboard position if available, and confirmation that the entry was accepted.
+
+Priority: successful validated submission before the deadline, not endless polishing.

@@ -30,7 +30,10 @@ INK     = (24, 28, 34)
 MUTED   = (96, 100, 108)
 RULE    = (180, 172, 156)
 OCEAN   = (168, 196, 214)
-LANDC   = (227, 217, 194)
+OCEAN_T = (160, 192, 212)   # V8-final (A): teal-to-navy ocean gradient, top
+OCEAN_B = (104, 146, 178)   # V8-final (A): teal-to-navy ocean gradient, bottom
+RIDGE   = (96, 74, 52)      # V8-final (A): mountain ridge marks
+LANDC   = (231, 221, 197)   # V8-final (A): parchment, slightly warmer than V8.2
 LANDOUT = (138, 123, 92)
 CARD    = (255, 255, 255)
 NAVY    = (22, 42, 66)
@@ -491,7 +494,12 @@ d.text((W-8, 252), "Every numbered pin is a real place.  #5 GTA VI is worldwide 
        font=font(F_SANS, 9), fill=MUTED, anchor="ra")
 
 MAP = (8, 274, 776, 560)          # 768 x 286 draw area (was 768 x 272)
-d.rectangle(MAP, fill=OCEAN, outline=RULE, width=1)
+# V8-final (A: Cinematic Editorial Atlas): teal-to-navy ocean depth gradient.
+for _yy in range(MAP[1], MAP[3]):
+    _t = (_yy - MAP[1]) / max(1, MAP[3] - MAP[1] - 1)
+    _c = tuple(int(OCEAN_T[j] + (OCEAN_B[j] - OCEAN_T[j]) * _t) for j in range(3))
+    d.line([(MAP[0], _yy), (MAP[2], _yy)], fill=_c)
+d.rectangle(MAP, outline=RULE, width=1)
 land = json.load(open(LAND))
 LAT_TOP, LAT_BOT = 84, -58
 def project(lon, lat, box=MAP):
@@ -501,10 +509,10 @@ def project(lon, lat, box=MAP):
 
 for lon in range(-150, 181, 30):
     x = project(lon, 0)[0]
-    d.line([(x, MAP[1]), (x, MAP[3])], fill=(255,255,255,120), width=1)
+    d.line([(x, MAP[1]), (x, MAP[3])], fill=(255,255,255,90), width=1)
 for lat in range(-30, 91, 30):
     y = project(0, lat)[1]
-    d.line([(MAP[0], y), (MAP[2], y)], fill=(255,255,255,120), width=1)
+    d.line([(MAP[0], y), (MAP[2], y)], fill=(255,255,255,90), width=1)
 for feat in land["features"]:
     geom = feat["geometry"]
     polys = geom["coordinates"] if geom["type"] == "Polygon" else \
@@ -516,10 +524,41 @@ for feat in land["features"]:
             pts.append(project(lon, lat))
         if len(pts) > 2:
             d.polygon(pts, fill=LANDC, outline=LANDOUT)
-for txt, lon, lat in [("ATLANTIC", -30, 12), ("PACIFIC", -150, -2), ("PACIFIC", 158, -12),
-                      ("INDIAN OCEAN", 78, -30), ("SOUTHERN OCEAN", -40, -52)]:
+# V8-final (A): mountain ridge marks — fine dark strokes on REAL ranges only.
+# (Prototype-A coords + (8, 250) to production page coords.)
+def ridge(x, y):
+    d.line([(x, y), (x + 3, y - 4), (x + 6, y)], fill=RIDGE, width=1)
+for x, y in [(553, 386), (561, 382), (569, 386), (577, 383), (585, 387)]:  # Himalayas
+    ridge(x, y)
+for x, y in [(241, 448), (245, 458), (242, 468)]:  # Andes (above #15 callout)
+    ridge(x, y)
+for x, y in [(150, 372), (158, 366), (166, 372)]:  # Rockies
+    ridge(x, y)
+for x, y in [(410, 360), (418, 357), (425, 360)]:  # Alps
+    ridge(x, y)
+for x, y in [(378, 390), (386, 387)]:  # Atlas
+    ridge(x, y)
+# V8-final (A): ocean labels nudged out from under the callout cards.
+for txt, lon, lat in [("ATLANTIC", -30, -8), ("PACIFIC", -150, 8), ("PACIFIC", 150, -18),
+                      ("INDIAN OCEAN", 20, -38), ("SOUTHERN OCEAN", -40, -52)]:
     x, y = project(lon, lat)
-    d.text((x, y), txt, font=font(F_SANS_B, 10), fill=(66, 100, 128), anchor="mm")
+    d.text((x, y), txt, font=font(F_SANS_B, 10), fill=(52, 88, 118), anchor="mm")
+# V8-final (A): coordinate labels on frame edges, 7px muted.
+for lon in range(-150, 181, 30):
+    x = project(lon, 0)[0]
+    if x >= MAP[2] - 4:
+        continue
+    lab = f"{abs(lon)}°{'W' if lon < 0 else 'E' if lon > 0 else ''}"
+    d.text((x, 277), lab, font=font(F_SANS, 7), fill=(90, 110, 128), anchor="ma")
+for lat, lab in [(60, "60°N"), (30, "30°N")]:
+    y = project(0, lat)[1]
+    d.text((11, y), lab, font=font(F_SANS, 7), fill=(90, 110, 128), anchor="lm")
+# 0° / 30°S sit right of the Europe inset; x=198 keeps clear of both the
+# inset edge (196) and pin 15's badge (left edge ~215). FIX: prototype A had
+# the 0° label ~2px from pin 15's dot; moved left for clearance.
+for lat, lab in [(0, "0°"), (-30, "30°S")]:
+    y = project(0, lat)[1]
+    d.text((198, y), lab, font=font(F_SANS, 7), fill=(90, 110, 128), anchor="lm")
 
 # ---- Europe detail inset (relieves the dense pin cluster): lon -12..38, lat 37.5..61,
 # ---- placed over the empty South Atlantic, bottom-left of the map.
@@ -580,13 +619,146 @@ for n, (lon, lat) in {2: (4.30, 52.08), 7: (12.57, 55.68), 6: (36.50, 45.30),
     d.ellipse([x-8, y-8, x+8, y+8], fill=rc, outline=(255,255,255), width=1)
     d.text((x, y), str(n), font=font(F_SANS_B, 8), fill=(255,255,255), anchor="mm")
 
-# ---- pins (featured 1-4, 6-15; #5 GLOBAL, no pin) ----
+# ================= V8-final (A: Cinematic Editorial Atlas) — ILLUSTRATED CALLOUTS =========
+# Each: paper card, region-colour top strip, gold outline, one miniature
+# editorial scene + short factual label, thin connector to the true pin dot.
+# Cards sit in EMPTY ocean only; connectors are drawn before the pins so
+# the pin dot covers the line end. (Prototype-A coords + (8, 250).)
+# NOTE on refinement 2 (Middle East inset): no clean ocean slot exists in
+# A's layout — every candidate 140x85 slot either covers land (Australia's
+# Bight, New Zealand, Brazil's bulge, Siberia/Japan) or collides with a
+# callout/pin (the South Atlantic slot B uses is occupied by A's #15 Quito
+# callout). Per Bram's "where useful without overcrowding" qualifier and
+# refinement 5 (no obscured geography), the inset is NOT forced in; B's
+# geographic precision is borrowed instead via the frame coordinate labels,
+# honest equator scale bar, and nudged ocean labels above.
+
+def scene_summit(box):
+    x0, y0, x1, y1 = box
+    sky(d, box, (252, 200, 122), (216, 132, 72))
+    d.ellipse([x1 - 22, y0 + 2, x1 - 6, y0 + 18], fill=(255, 238, 172))
+    cx = (x0 + x1) // 2
+    for fx, fc in [(x0 + 14, (178, 34, 34)), (cx - 2, (30, 60, 140)), (x1 - 30, (240, 240, 240))]:
+        d.line([(fx, y0 + 4), (fx, y1 - 12)], fill=(30, 30, 30), width=1)
+        d.polygon([(fx, y0 + 4), (fx + 12, y0 + 7), (fx, y0 + 10)], fill=fc)
+    d.rectangle([x0 + 4, y1 - 12, x1 - 4, y1 - 2], fill=(96, 66, 40))
+    # FIX (refinement 3): prototype busts were black silhouettes at 200%;
+    # lightened to warm tan so the three figures stay recognizable.
+    for hx in (x0 + 16, cx, x1 - 16):
+        d.ellipse([hx - 4, y1 - 20, hx + 4, y1 - 12], fill=(186, 160, 128))
+
+def scene_ipo(box):
+    x0, y0, x1, y1 = box
+    sky(d, box, (30, 60, 90), (70, 120, 150))
+    d.rectangle([x0 + 4, y1 - 22, x1 - 4, y1 - 2], fill=(220, 220, 210))
+    d.polygon([(x0 + 2, y1 - 22), ((x0 + x1) // 2, y1 - 32), (x1 - 2, y1 - 22)], fill=(220, 220, 210))
+    for i, h in enumerate((8, 12, 10, 15)):
+        bx = x0 + 7 + i * 9
+        d.rectangle([bx, y1 - 4 - h, bx + 6, y1 - 4], fill=(255, 255, 255))
+    d.line([(x0 + 5, y1 - 26), (x1 - 5, y1 - 10)], fill=(255, 214, 110), width=2)
+
+def scene_cyclone(box):
+    x0, y0, x1, y1 = box
+    sky(d, box, (60, 80, 100), (120, 150, 170))
+    cx = (x0 + x1) // 2
+    cy = y0 + (y1 - y0) // 2 - 2
+    for r in (13, 9, 5):
+        d.ellipse([cx - r, cy - r, cx + r, cy + r], outline=(255, 255, 255), width=2)
+    d.ellipse([cx - 2, cy - 2, cx + 2, cy + 2], fill=(255, 255, 255))
+    d.rectangle([x0, y1 - 6, x1, y1], fill=(90, 140, 120))
+
+def scene_quito(box):
+    x0, y0, x1, y1 = box
+    sky(d, box, (140, 180, 215), (205, 225, 240))
+    d.ellipse([x1 - 20, y0 + 3, x1 - 8, y0 + 15], fill=(255, 240, 180))
+    d.polygon([(x0 + 2, y1 - 2), (x0 + 18, y0 + 14), (x0 + 34, y1 - 2)], fill=(90, 120, 90))
+    d.polygon([(x0 + 22, y1 - 2), (x0 + 40, y0 + 8), (x1 - 2, y1 - 2)], fill=(70, 100, 75))
+    d.polygon([(x0 + 15, y0 + 11), (x0 + 21, y0 + 14), (x0 + 15, y0 + 17)], fill=(255, 255, 255))
+    d.polygon([(x0 + 37, y0 + 5), (x0 + 43, y0 + 8), (x0 + 37, y0 + 11)], fill=(255, 255, 255))
+    px, py = (x0 + x1) // 2 - 2, y0 + 8
+    d.ellipse([px - 9, py - 2, px + 9, py + 2], fill=(255, 255, 255))
+    d.line([(px - 2, py - 6), (px + 2, py + 6)], fill=(255, 255, 255), width=2)
+
+def callout(box, n, region, scene_fn, title, body_lines, source, scene_box, text_xy):
+    x0, y0, x1, y1 = box
+    rc = REGION[region]
+    d.rectangle(box, fill=CARD, outline=GOLD, width=1)
+    d.rectangle([x0, y0, x1, y0 + 3], fill=rc)
+    scene_fn(scene_box)
+    d.rectangle(scene_box, outline=RULE, width=1)
+    cx0, cy0 = scene_box[0] + 8, scene_box[1] + 8
+    d.ellipse([cx0 - 8, cy0 - 8, cx0 + 8, cy0 + 8], fill=rc, outline=(255, 255, 255), width=1)
+    d.text((cx0, cy0), str(n), font=font(F_SANS_B, 8), fill=(255, 255, 255), anchor="mm")
+    tx, ty, tw = text_xy
+    lines = wrap(title, font(F_SANS_B, 8), tw)
+    ty = draw_lines(d, tx, ty, lines, font(F_SANS_B, 8), INK, leading=10)
+    ty = draw_lines(d, tx, ty, body_lines, font(F_SANS, 8), MUTED, leading=10)
+    d.text((tx, ty), source, font=font(F_SANS, 7), fill=MUTED)
+
+def connector(n, from_xy):
+    x, y = project(*PINS[n])
+    d.line([from_xy, (x, y)], fill=(60, 60, 60), width=1)
+
+# PINS moved up from the pins block below: the callout connectors above need
+# them at draw time. Values identical to V8.2 (verified: same coordinates).
 PINS = {
  1: (114.06, 22.55), 2: (4.30, 52.08), 3: (30.71, 36.90), 4: (-74.00, 40.71),
  6: (36.50, 45.30), 7: (12.57, 55.68), 8: (85.80, 20.30), 9: (126.98, 37.57),
  10: (151.21, -33.87), 11: (36.82, -1.29), 12: (56.30, 26.60), 13: (46.68, 24.71),
  14: (106.85, -6.21), 15: (-78.51, -0.18),
 }
+
+# #4 IPO — Atlantic box; scene left, text right.
+connector(4, (252, 408))
+callout((252, 376, 404, 440), 4, "North America", scene_ipo,
+        "ANTHROPIC IPO", ["$81.3bn debut,", "closes $97.17, +17%"],
+        "New York · Investopedia",
+        (256, 380, 308, 436), (312, 382, 88))
+# #1 Summit — Pacific east of Japan, vertical card. Card bottom +4px vs
+# prototype so the source line clears the border (was <2px margin at 200%).
+connector(1, (676, 394))
+callout((676, 390, 776, 472), 1, "Asia", scene_summit,
+        "US-RUSSIA-CHINA SUMMIT", ["Peace declaration"],
+        "Shenzhen · White House",
+        (680, 394, 772, 424), (680, 428, 92))
+# #8 Cyclone — open Indian Ocean south of India. Card bottom +4px vs
+# prototype so the source line clears the border (was <2px margin at 200%).
+connector(8, (558, 450))
+callout((500, 450, 604, 532), 8, "Asia", scene_cyclone,
+        "CYCLONE AKVAN", ["80,000+ evacuated,", "Odisha landfall Fri"],
+        "The Hindu BusinessLine",
+        (504, 454, 600, 484), (504, 488, 92))
+# #15 Hegseth — South Atlantic east of the inset.
+connector(15, (258, 466))
+callout((222, 466, 374, 530), 15, "Latin America", scene_quito,
+        "HEGSETH IN QUITO", ["Defence chief's", "LatAm tour"],
+        "Quito + Honduras · dpa",
+        (226, 470, 282, 526), (286, 472, 84))
+
+# V8-final (A): gold compass rose — empty North Pacific, away from pins/cards.
+ccx, ccy = 98, 380
+d.ellipse([ccx - 14, ccy - 14, ccx + 14, ccy + 14], outline=NAVY, width=1)
+d.line([(ccx, ccy - 14), (ccx, ccy + 14)], fill=NAVY, width=1)
+d.line([(ccx - 14, ccy), (ccx + 14, ccy)], fill=NAVY, width=1)
+d.polygon([(ccx, ccy - 13), (ccx + 3, ccy), (ccx, ccy + 13), (ccx - 3, ccy)],
+          fill=GOLD, outline=NAVY)
+d.text((ccx, ccy - 20), "N", font=font(F_SANS_B, 8), fill=NAVY, anchor="mm")
+
+# V8-final (A): scale bar — honest only at the equator (equirectangular
+# stretches with latitude). 768 px = 360 deg -> 2.1333 px/deg; 111.32 km/deg
+# -> 2000 km = 38.3 px.
+sb_x, sb_y = 478, 547
+d.text((sb_x - 4, sb_y - 2), "SCALE AT EQUATOR", font=font(F_SANS_B, 7),
+       fill=(90, 110, 128), anchor="rm")
+d.rectangle([sb_x, sb_y - 4, sb_x + 19, sb_y], fill=NAVY)
+d.rectangle([sb_x + 19, sb_y - 4, sb_x + 38, sb_y], fill=(255, 255, 255),
+            outline=NAVY, width=1)
+d.text((sb_x, sb_y - 12), "0", font=font(F_SANS, 7), fill=(90, 110, 128), anchor="ma")
+d.text((sb_x + 19, sb_y - 12), "1000", font=font(F_SANS, 7), fill=(90, 110, 128), anchor="ma")
+d.text((sb_x + 38, sb_y - 12), "2000 km", font=font(F_SANS, 7), fill=(90, 110, 128), anchor="ma")
+
+# ---- pins (featured 1-4, 6-15; #5 GLOBAL, no pin) ----
+# (PINS defined above, before the V8-final callouts, which connect to them.)
 LEADER = {2: (-40, -22), 7: (36, -24), 6: (38, -14), 3: (-42, 18), 12: (32, 20), 13: (-38, 18)}
 for s in featured:
     n = s["n"]
