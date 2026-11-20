@@ -58,12 +58,16 @@ def main():
     dims = png_dimensions(data)
     if dims is None:
         sys.exit("entry.png is not a PNG")
-    if dims[0] > MAX_DIM or dims[1] > MAX_DIM:
-        sys.exit(f"entry.png too large: {dims[0]}x{dims[1]} > {MAX_DIM}x{MAX_DIM}")
+    if dims != (MAX_DIM, MAX_DIM):
+        sys.exit(f"entry.png must be exactly {MAX_DIM}x{MAX_DIM}, "
+                 f"got {dims[0]}x{dims[1]}")
     if not png_wellformed(data):
         sys.exit("entry.png PNG chunk chain is not well formed")
     OUT.mkdir(parents=True, exist_ok=True)
     shutil.copyfile(src, OUT / "entry.png")
+    copied = (OUT / "entry.png").read_bytes()
+    if hashlib.sha256(copied).hexdigest() != hashlib.sha256(data).hexdigest():
+        sys.exit("entry.png copy verification failed: sha256 mismatch after copy")
     print(f"entry.png written to {OUT / 'entry.png'}")
     print(f"size={len(data)} bytes sha256={hashlib.sha256(data).hexdigest()} "
           f"dimensions={dims[0]}x{dims[1]}")
