@@ -2,7 +2,7 @@
   "title": "The World in One Day",
   "date": "2026-11-19",
   "day": "Thursday",
-  "stories_total": 50,
+  "stories_total": 35,
   "regions": [
     "Asia",
     "Europe",
@@ -18,8 +18,8 @@
       "label": "ICJ: Myanmar committed genocide"
     },
     {
-      "value": "$81.3bn",
-      "label": "Record Anthropic IPO"
+      "value": "99",
+      "label": "GTA VI Metacritic score"
     },
     {
       "value": "551,864",
@@ -64,12 +64,12 @@
     },
     {
       "n": 4,
-      "headline": "Anthropic debuts in record $81.3bn IPO",
-      "summary": "Shares priced at $83 open at $111.50 and close at $97.17, up 17%; the largest IPO ever.",
+      "headline": "Anthropic debuts in $81.3bn IPO",
+      "summary": "Shares priced at $83 open at $111.50 and close at $97.17, up 17%.",
       "place": "New York",
       "region": "North America",
       "source": "Investopedia",
-      "confidence": "verified"
+      "confidence": "reported"
     },
     {
       "n": 5,
@@ -169,20 +169,11 @@
       "region": "Asia",
       "source": "Reuters",
       "confidence": "verified"
-    },
-    {
-      "n": 16,
-      "headline": "Unions hold national strike against tax bill",
-      "summary": "Strike disrupts Bogota transit and airport roads.",
-      "place": "Bogota, Colombia",
-      "region": "Latin America",
-      "source": "Travelers Today",
-      "confidence": "verified"
     }
   ],
   "also": [
     {
-      "n": 17,
+      "n": 16,
       "headline": "Jepchirchir banned 3y, EPO",
       "place": "Nairobi, Kenya",
       "region": "Africa",
@@ -190,7 +181,7 @@
       "confidence": "verified"
     },
     {
-      "n": 18,
+      "n": 17,
       "headline": "Mongolia leader resigns",
       "place": "Ulaanbaatar",
       "region": "Asia",
@@ -198,7 +189,7 @@
       "confidence": "verified"
     },
     {
-      "n": 19,
+      "n": 18,
       "headline": "Han 15y term partly cut",
       "place": "Seoul",
       "region": "Asia",
@@ -206,23 +197,7 @@
       "confidence": "verified"
     },
     {
-      "n": 20,
-      "headline": "Floods shut Florida schools",
-      "place": "Florida",
-      "region": "North America",
-      "source": "USA Today",
-      "confidence": "verified"
-    },
-    {
-      "n": 21,
-      "headline": "M5.7 quake jolts Kumamoto; 2 hurt",
-      "place": "Kumamoto",
-      "region": "Asia",
-      "source": "ALO Japan",
-      "confidence": "verified"
-    },
-    {
-      "n": 22,
+      "n": 19,
       "headline": "Zelensky meets allies in Berlin",
       "place": "Berlin",
       "region": "Europe",
@@ -230,7 +205,7 @@
       "confidence": "verified"
     },
     {
-      "n": 23,
+      "n": 20,
       "headline": "French left splits over Melenchon",
       "place": "Paris",
       "region": "Europe",
@@ -238,15 +213,7 @@
       "confidence": "verified"
     },
     {
-      "n": 24,
-      "headline": "CLAIM: Strikes reported near Badme",
-      "place": "Badme",
-      "region": "Africa",
-      "source": "Addis Standard",
-      "confidence": "claim"
-    },
-    {
-      "n": 25,
+      "n": 21,
       "headline": "Somalia expels UAE ambassador",
       "place": "Mogadishu",
       "region": "Africa",
@@ -254,15 +221,7 @@
       "confidence": "verified"
     },
     {
-      "n": 26,
-      "headline": "Serbia elects Cupic speaker",
-      "place": "Belgrade",
-      "region": "Europe",
-      "source": "AP",
-      "confidence": "verified"
-    },
-    {
-      "n": 27,
+      "n": 22,
       "headline": "Hegseth in Ecuador, Honduras",
       "place": "Quito",
       "region": "Latin America",
@@ -270,15 +229,7 @@
       "confidence": "verified"
     },
     {
-      "n": 28,
-      "headline": "UK, Norway fund GBP100m boats",
-      "place": "Berlin",
-      "region": "Europe",
-      "source": "UK govt",
-      "confidence": "verified"
-    },
-    {
-      "n": 29,
+      "n": 23,
       "headline": "Russian drones hit Kyiv; 1 killed",
       "place": "Kyiv",
       "region": "Europe",
@@ -286,7 +237,7 @@
       "confidence": "verified"
     },
     {
-      "n": 30,
+      "n": 24,
       "headline": "S&P 500 down 2.02%, 6th fall",
       "place": "New York",
       "region": "North America",
@@ -294,7 +245,7 @@
       "confidence": "verified"
     },
     {
-      "n": 31,
+      "n": 25,
       "headline": "IEA: Hormuz top threat ever",
       "place": "Paris",
       "region": "Europe",
@@ -302,15 +253,7 @@
       "confidence": "verified"
     },
     {
-      "n": 32,
-      "headline": "CLAIM: Pakistan: 22 militants dead",
-      "place": "Khyber Pakhtunkhwa",
-      "region": "Asia",
-      "source": "TBS News",
-      "confidence": "claim"
-    },
-    {
-      "n": 33,
+      "n": 26,
       "headline": "Migrants fuelled Spain's boom",
       "place": "Madrid",
       "region": "Europe",
@@ -318,7 +261,7 @@
       "confidence": "verified"
     },
     {
-      "n": 34,
+      "n": 27,
       "headline": "CLAIM: Houthis: 10 killed in Sanaa",
       "place": "Sanaa",
       "region": "Middle East",
@@ -326,7 +269,7 @@
       "confidence": "claim"
     },
     {
-      "n": 35,
+      "n": 28,
       "headline": "IDF kills five across Gaza",
       "place": "Gaza",
       "region": "Middle East",
@@ -334,15 +277,7 @@
       "confidence": "verified"
     },
     {
-      "n": 36,
-      "headline": "CLAIM: Iraq, Kata'ib reach deal",
-      "place": "Jurf al-Sakhar",
-      "region": "Middle East",
-      "source": "Reuters",
-      "confidence": "claim"
-    },
-    {
-      "n": 37,
+      "n": 29,
       "headline": "Trump on Iran: see what happens",
       "place": "Washington",
       "region": "North America",
@@ -350,15 +285,7 @@
       "confidence": "verified"
     },
     {
-      "n": 38,
-      "headline": "Walmart revenue $188.8bn",
-      "place": "Bentonville",
-      "region": "North America",
-      "source": "Business Wire",
-      "confidence": "verified"
-    },
-    {
-      "n": 39,
+      "n": 30,
       "headline": "Kim Keon Hee 4y term upheld",
       "place": "Seoul",
       "region": "Asia",
@@ -366,7 +293,7 @@
       "confidence": "verified"
     },
     {
-      "n": 40,
+      "n": 31,
       "headline": "Senate rejects Iran war-powers 51-48",
       "place": "Washington",
       "region": "North America",
@@ -374,7 +301,7 @@
       "confidence": "verified"
     },
     {
-      "n": 41,
+      "n": 32,
       "headline": "AI cyberattack hit EU in Oct",
       "place": "Brussels",
       "region": "Europe",
@@ -382,7 +309,7 @@
       "confidence": "verified"
     },
     {
-      "n": 42,
+      "n": 33,
       "headline": "China unis blacklisted; Nvidia chips",
       "place": "Beijing",
       "region": "Asia",
@@ -390,7 +317,7 @@
       "confidence": "verified"
     },
     {
-      "n": 43,
+      "n": 34,
       "headline": "Japan, India deepen defence ties",
       "place": "Tokyo",
       "region": "Asia",
@@ -398,59 +325,11 @@
       "confidence": "verified"
     },
     {
-      "n": 44,
-      "headline": "Trump to meet Kim 'at some point'",
-      "place": "Air Force One",
-      "region": "North America",
-      "source": "Korea JoongAng Daily",
-      "confidence": "verified"
-    },
-    {
-      "n": 45,
+      "n": 35,
       "headline": "Dutch summon Russian ambassador",
       "place": "The Hague",
       "region": "Europe",
       "source": "Reuters",
-      "confidence": "verified"
-    },
-    {
-      "n": 46,
-      "headline": "UK leasehold reform bill tabled",
-      "place": "London",
-      "region": "Europe",
-      "source": "GOV.UK",
-      "confidence": "verified"
-    },
-    {
-      "n": 47,
-      "headline": "Cleverly Tory London mayor pick",
-      "place": "London",
-      "region": "Europe",
-      "source": "The Times",
-      "confidence": "verified"
-    },
-    {
-      "n": 48,
-      "headline": "APGA adopts Tinubu for 2027",
-      "place": "Awka, Nigeria",
-      "region": "Africa",
-      "source": "ThisDay",
-      "confidence": "verified"
-    },
-    {
-      "n": 49,
-      "headline": "India v NZ 1st Test begins",
-      "place": "Wellington",
-      "region": "Oceania",
-      "source": "ESPNcricinfo",
-      "confidence": "verified"
-    },
-    {
-      "n": 50,
-      "headline": "Punjab bridge falls, none hurt",
-      "place": "Patiala, India",
-      "region": "Asia",
-      "source": "ANI",
       "confidence": "verified"
     }
   ],
@@ -463,5 +342,5 @@
     "US carrier withdraws from the Middle East (confirmed Wed, 18 Nov)",
     "Kuwait and Bahrain say they repelled Iranian drone attacks (Wed night, 18 Nov)"
   ],
-  "sources_note": "All 50 stories happened or were first reported on Thursday 19 November 2026. CLAIM marks an unverified claim as reported, never a fact. Seven stories first reported Wed 18 Nov were removed in a date check: Van Gogh record sale, IAEA Yongbyon, US-Venezuela pact, EU EUR45bn loan proposal, Taiz water crisis, US carrier departure, Kuwait/Bahrain drone interceptions. Sources include Reuters, AP, White House, ICJ, WSJ, CNN, GOV.UK and national wires."
+  "sources_note": "All 35 stories happened or were first reported on Thursday 19 November 2026. CLAIM marks an unverified claim as reported, never a fact. Seven stories first reported Wed 18 Nov were removed in a date check: Van Gogh record sale, IAEA Yongbyon, US-Venezuela pact, EU EUR45bn loan proposal, Taiz water crisis, US carrier departure, Kuwait/Bahrain drone interceptions. Sources include Reuters, AP, White House, ICJ, WSJ, CNN, GOV.UK and national wires."
 }
