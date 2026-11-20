@@ -1,6 +1,11 @@
 #!/usr/bin/env python3
 """news-image-20261119 entrypoint (Python 3.13, standard library only).
 
+V5 final render: 50 stories, 16 illustrations, world map with 15 geographic
+pins (story 5, GTA VI, is worldwide and is marked GLOBAL in the map legend
+with no map dot). Reference-faithful layout: 4 heroes in one row, 12 minis
+in a 6x2 grid, map + 34-item newswire, date-check footer.
+
 Copies the pre-rendered entry.png beside this file to
 $MAKEFUN_OUTPUT_DIR/entry.png (or /output/entry.png in the grader).
 No network, no rendering at run time: the same bytes every run.
@@ -59,8 +64,8 @@ def main():
     if dims is None:
         sys.exit("entry.png is not a PNG")
     if dims != (MAX_DIM, MAX_DIM):
-        sys.exit(f"entry.png must be exactly {MAX_DIM}x{MAX_DIM}, "
-                 f"got {dims[0]}x{dims[1]}")
+        sys.exit(f"entry.png must be exactly {MAX_DIM}x{MAX_DIM} "
+                 f"(V5 final render), got {dims[0]}x{dims[1]}")
     if not png_wellformed(data):
         sys.exit("entry.png PNG chunk chain is not well formed")
     OUT.mkdir(parents=True, exist_ok=True)

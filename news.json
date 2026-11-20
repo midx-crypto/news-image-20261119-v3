@@ -3,19 +3,42 @@
   "date": "2026-11-19",
   "day": "Thursday",
   "stories_total": 50,
-  "regions": ["Asia", "Europe", "North America", "Latin America", "Africa", "Middle East", "Oceania"],
+  "regions": [
+    "Asia",
+    "Europe",
+    "North America",
+    "Latin America",
+    "Africa",
+    "Middle East",
+    "Oceania"
+  ],
   "stats": [
-    {"value": "9-6", "label": "ICJ: Myanmar committed genocide"},
-    {"value": "$81.3bn", "label": "Record Anthropic IPO"},
-    {"value": "551,864", "label": "Sit Korea's Suneung exam"},
-    {"value": "80,000+", "label": "Evacuated ahead of Cyclone Akvan"},
-    {"value": "51-48", "label": "Senate rejects Iran war-powers"}
+    {
+      "value": "9-6",
+      "label": "ICJ: Myanmar committed genocide"
+    },
+    {
+      "value": "$81.3bn",
+      "label": "Record Anthropic IPO"
+    },
+    {
+      "value": "551,864",
+      "label": "Sit Korea's Suneung exam"
+    },
+    {
+      "value": "80,000+",
+      "label": "Evacuated ahead of Cyclone Akvan"
+    },
+    {
+      "value": "51-48",
+      "label": "Senate rejects Iran war-powers"
+    }
   ],
   "featured": [
     {
       "n": 1,
       "headline": "Trump, Xi and Putin hold first three-way summit",
-      "summary": "Leaders sign a \u201cDeclaration toward Peace\u201d in Shenzhen: \u201ca nuclear war cannot be won and must never be fought\u201d.",
+      "summary": "Leaders sign a “Declaration toward Peace” in Shenzhen: “a nuclear war cannot be won and must never be fought”.",
       "place": "Shenzhen, China",
       "region": "Asia",
       "source": "White House",
@@ -158,40 +181,278 @@
     }
   ],
   "also": [
-    {"n": 17, "headline": "Jepchirchir banned 3 years for EPO", "place": "Nairobi, Kenya", "region": "Africa", "source": "Reuters", "confidence": "verified"},
-    {"n": 18, "headline": "Mongolia accepts president's resignation", "place": "Ulaanbaatar", "region": "Asia", "source": "Reuters", "confidence": "verified"},
-    {"n": 19, "headline": "Court overturns Han's 15-year term in part", "place": "Seoul", "region": "Asia", "source": "Reuters", "confidence": "verified"},
-    {"n": 20, "headline": "Floods shut schools across South Florida", "place": "Florida", "region": "North America", "source": "USA Today", "confidence": "verified"},
-    {"n": 21, "headline": "M5.7 quake jolts Kumamoto; 2 hurt", "place": "Kumamoto", "region": "Asia", "source": "ALO Japan", "confidence": "verified"},
-    {"n": 22, "headline": "Zelensky meets allies in Berlin", "place": "Berlin", "region": "Europe", "source": "NY Post", "confidence": "verified"},
-    {"n": 23, "headline": "French left splits over Melenchon", "place": "Paris", "region": "Europe", "source": "Le Monde", "confidence": "verified"},
-    {"n": 24, "headline": "CLAIM: Strikes reported around Badme", "place": "Badme", "region": "Africa", "source": "Addis Standard", "confidence": "claim"},
-    {"n": 25, "headline": "Somalia expels UAE ambassador", "place": "Mogadishu", "region": "Africa", "source": "Reuters", "confidence": "verified"},
-    {"n": 26, "headline": "Serbia elects Cupic as parliament speaker", "place": "Belgrade", "region": "Europe", "source": "AP", "confidence": "verified"},
-    {"n": 27, "headline": "Hegseth trips to Ecuador and Honduras", "place": "Quito", "region": "Latin America", "source": "dpa / GNA", "confidence": "verified"},
-    {"n": 28, "headline": "UK, Norway fund GBP100m+ attack boats", "place": "Berlin", "region": "Europe", "source": "UK govt", "confidence": "verified"},
-    {"n": 29, "headline": "Russian drones hit Kyiv; 1 killed", "place": "Kyiv", "region": "Europe", "source": "Kyiv24", "confidence": "verified"},
-    {"n": 30, "headline": "S&P 500 falls 2.02%, sixth straight loss", "place": "New York", "region": "North America", "source": "Morningstar", "confidence": "verified"},
-    {"n": 31, "headline": "IEA: Hormuz crisis is biggest threat ever", "place": "Paris", "region": "Europe", "source": "Reuters", "confidence": "verified"},
-    {"n": 32, "headline": "CLAIM: Pakistan says 22 militants killed", "place": "Khyber Pakhtunkhwa", "region": "Asia", "source": "TBS News", "confidence": "claim"},
-    {"n": 33, "headline": "Migrants fuelled Spain's boom", "place": "Madrid", "region": "Europe", "source": "Reuters", "confidence": "verified"},
-    {"n": 34, "headline": "CLAIM: Houthis say 10 killed in Sanaa", "place": "Sanaa", "region": "Middle East", "source": "Houthi health ministry", "confidence": "claim"},
-    {"n": 35, "headline": "IDF kills five across Gaza on Thursday", "place": "Gaza", "region": "Middle East", "source": "Gaza Health Ministry", "confidence": "verified"},
-    {"n": 36, "headline": "CLAIM: Iraq, Kata'ib Hezbollah reach deal", "place": "Jurf al-Sakhar", "region": "Middle East", "source": "Reuters", "confidence": "claim"},
-    {"n": 37, "headline": "Trump on Iran: 'see what happens after Jan 1'", "place": "Washington", "region": "North America", "source": "Reuters", "confidence": "verified"},
-    {"n": 38, "headline": "Walmart revenue $188.8bn", "place": "Bentonville", "region": "North America", "source": "Business Wire", "confidence": "verified"},
-    {"n": 39, "headline": "Court upholds Kim Keon Hee's 4-year term", "place": "Seoul", "region": "Asia", "source": "Reuters", "confidence": "verified"},
-    {"n": 40, "headline": "Senate rejects Iran war-powers 51-48", "place": "Washington", "region": "North America", "source": "Reuters", "confidence": "verified"},
-    {"n": 41, "headline": "AI-powered cyberattack hit the EU in October", "place": "Brussels", "region": "Europe", "source": "InfoSecurity", "confidence": "verified"},
-    {"n": 42, "headline": "Blacklisted China universities, Nvidia chips", "place": "Beijing", "region": "Asia", "source": "CNN", "confidence": "verified"},
-    {"n": 43, "headline": "Japan, India deepen military ties in 4th 2+2", "place": "Tokyo", "region": "Asia", "source": "AP", "confidence": "verified"},
-    {"n": 44, "headline": "Trump says he will meet Kim 'at some point'", "place": "Air Force One", "region": "North America", "source": "Korea JoongAng Daily", "confidence": "verified"},
-    {"n": 45, "headline": "Netherlands summons Russian ambassador", "place": "The Hague", "region": "Europe", "source": "Reuters", "confidence": "verified"},
-    {"n": 46, "headline": "UK Leasehold Reform Bill introduced", "place": "London", "region": "Europe", "source": "GOV.UK", "confidence": "verified"},
-    {"n": 47, "headline": "Cleverly is Tory candidate for London mayor", "place": "London", "region": "Europe", "source": "The Times", "confidence": "verified"},
-    {"n": 48, "headline": "APGA adopts Tinubu as 2027 candidate", "place": "Awka, Nigeria", "region": "Africa", "source": "ThisDay", "confidence": "verified"},
-    {"n": 49, "headline": "India vs New Zealand 1st Test begins", "place": "Wellington", "region": "Oceania", "source": "ESPNcricinfo", "confidence": "verified"},
-    {"n": 50, "headline": "Bridge collapses in Punjab; no deaths", "place": "Patiala, India", "region": "Asia", "source": "ANI", "confidence": "verified"}
+    {
+      "n": 17,
+      "headline": "Jepchirchir banned 3y, EPO",
+      "place": "Nairobi, Kenya",
+      "region": "Africa",
+      "source": "Reuters",
+      "confidence": "verified"
+    },
+    {
+      "n": 18,
+      "headline": "Mongolia leader resigns",
+      "place": "Ulaanbaatar",
+      "region": "Asia",
+      "source": "Reuters",
+      "confidence": "verified"
+    },
+    {
+      "n": 19,
+      "headline": "Han 15y term partly cut",
+      "place": "Seoul",
+      "region": "Asia",
+      "source": "Reuters",
+      "confidence": "verified"
+    },
+    {
+      "n": 20,
+      "headline": "Floods shut Florida schools",
+      "place": "Florida",
+      "region": "North America",
+      "source": "USA Today",
+      "confidence": "verified"
+    },
+    {
+      "n": 21,
+      "headline": "M5.7 quake jolts Kumamoto; 2 hurt",
+      "place": "Kumamoto",
+      "region": "Asia",
+      "source": "ALO Japan",
+      "confidence": "verified"
+    },
+    {
+      "n": 22,
+      "headline": "Zelensky meets allies in Berlin",
+      "place": "Berlin",
+      "region": "Europe",
+      "source": "NY Post",
+      "confidence": "verified"
+    },
+    {
+      "n": 23,
+      "headline": "French left splits over Melenchon",
+      "place": "Paris",
+      "region": "Europe",
+      "source": "Le Monde",
+      "confidence": "verified"
+    },
+    {
+      "n": 24,
+      "headline": "CLAIM: Strikes reported near Badme",
+      "place": "Badme",
+      "region": "Africa",
+      "source": "Addis Standard",
+      "confidence": "claim"
+    },
+    {
+      "n": 25,
+      "headline": "Somalia expels UAE ambassador",
+      "place": "Mogadishu",
+      "region": "Africa",
+      "source": "Reuters",
+      "confidence": "verified"
+    },
+    {
+      "n": 26,
+      "headline": "Serbia elects Cupic speaker",
+      "place": "Belgrade",
+      "region": "Europe",
+      "source": "AP",
+      "confidence": "verified"
+    },
+    {
+      "n": 27,
+      "headline": "Hegseth in Ecuador, Honduras",
+      "place": "Quito",
+      "region": "Latin America",
+      "source": "dpa / GNA",
+      "confidence": "verified"
+    },
+    {
+      "n": 28,
+      "headline": "UK, Norway fund GBP100m boats",
+      "place": "Berlin",
+      "region": "Europe",
+      "source": "UK govt",
+      "confidence": "verified"
+    },
+    {
+      "n": 29,
+      "headline": "Russian drones hit Kyiv; 1 killed",
+      "place": "Kyiv",
+      "region": "Europe",
+      "source": "Kyiv24",
+      "confidence": "verified"
+    },
+    {
+      "n": 30,
+      "headline": "S&P 500 down 2.02%, 6th fall",
+      "place": "New York",
+      "region": "North America",
+      "source": "Morningstar",
+      "confidence": "verified"
+    },
+    {
+      "n": 31,
+      "headline": "IEA: Hormuz top threat ever",
+      "place": "Paris",
+      "region": "Europe",
+      "source": "Reuters",
+      "confidence": "verified"
+    },
+    {
+      "n": 32,
+      "headline": "CLAIM: Pakistan: 22 militants dead",
+      "place": "Khyber Pakhtunkhwa",
+      "region": "Asia",
+      "source": "TBS News",
+      "confidence": "claim"
+    },
+    {
+      "n": 33,
+      "headline": "Migrants fuelled Spain's boom",
+      "place": "Madrid",
+      "region": "Europe",
+      "source": "Reuters",
+      "confidence": "verified"
+    },
+    {
+      "n": 34,
+      "headline": "CLAIM: Houthis: 10 killed in Sanaa",
+      "place": "Sanaa",
+      "region": "Middle East",
+      "source": "Houthi health ministry",
+      "confidence": "claim"
+    },
+    {
+      "n": 35,
+      "headline": "IDF kills five across Gaza",
+      "place": "Gaza",
+      "region": "Middle East",
+      "source": "Gaza Health Ministry",
+      "confidence": "verified"
+    },
+    {
+      "n": 36,
+      "headline": "CLAIM: Iraq, Kata'ib reach deal",
+      "place": "Jurf al-Sakhar",
+      "region": "Middle East",
+      "source": "Reuters",
+      "confidence": "claim"
+    },
+    {
+      "n": 37,
+      "headline": "Trump on Iran: see what happens",
+      "place": "Washington",
+      "region": "North America",
+      "source": "Reuters",
+      "confidence": "verified"
+    },
+    {
+      "n": 38,
+      "headline": "Walmart revenue $188.8bn",
+      "place": "Bentonville",
+      "region": "North America",
+      "source": "Business Wire",
+      "confidence": "verified"
+    },
+    {
+      "n": 39,
+      "headline": "Kim Keon Hee 4y term upheld",
+      "place": "Seoul",
+      "region": "Asia",
+      "source": "Reuters",
+      "confidence": "verified"
+    },
+    {
+      "n": 40,
+      "headline": "Senate rejects Iran war-powers 51-48",
+      "place": "Washington",
+      "region": "North America",
+      "source": "Reuters",
+      "confidence": "verified"
+    },
+    {
+      "n": 41,
+      "headline": "AI cyberattack hit EU in Oct",
+      "place": "Brussels",
+      "region": "Europe",
+      "source": "InfoSecurity",
+      "confidence": "verified"
+    },
+    {
+      "n": 42,
+      "headline": "China unis blacklisted; Nvidia chips",
+      "place": "Beijing",
+      "region": "Asia",
+      "source": "CNN",
+      "confidence": "verified"
+    },
+    {
+      "n": 43,
+      "headline": "Japan, India deepen defence ties",
+      "place": "Tokyo",
+      "region": "Asia",
+      "source": "AP",
+      "confidence": "verified"
+    },
+    {
+      "n": 44,
+      "headline": "Trump to meet Kim 'at some point'",
+      "place": "Air Force One",
+      "region": "North America",
+      "source": "Korea JoongAng Daily",
+      "confidence": "verified"
+    },
+    {
+      "n": 45,
+      "headline": "Dutch summon Russian ambassador",
+      "place": "The Hague",
+      "region": "Europe",
+      "source": "Reuters",
+      "confidence": "verified"
+    },
+    {
+      "n": 46,
+      "headline": "UK leasehold reform bill tabled",
+      "place": "London",
+      "region": "Europe",
+      "source": "GOV.UK",
+      "confidence": "verified"
+    },
+    {
+      "n": 47,
+      "headline": "Cleverly Tory London mayor pick",
+      "place": "London",
+      "region": "Europe",
+      "source": "The Times",
+      "confidence": "verified"
+    },
+    {
+      "n": 48,
+      "headline": "APGA adopts Tinubu for 2027",
+      "place": "Awka, Nigeria",
+      "region": "Africa",
+      "source": "ThisDay",
+      "confidence": "verified"
+    },
+    {
+      "n": 49,
+      "headline": "India v NZ 1st Test begins",
+      "place": "Wellington",
+      "region": "Oceania",
+      "source": "ESPNcricinfo",
+      "confidence": "verified"
+    },
+    {
+      "n": 50,
+      "headline": "Punjab bridge falls, none hurt",
+      "place": "Patiala, India",
+      "region": "Asia",
+      "source": "ANI",
+      "confidence": "verified"
+    }
   ],
   "left_out": [
     "Van Gogh sells for record $190.4m at Sotheby's (Wed night, 18 Nov)",
