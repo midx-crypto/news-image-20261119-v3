@@ -1,11 +1,26 @@
 #!/usr/bin/env python3
 """Render 'The World in One Day' - Thu 19 Nov 2026 - as a 1024x1024 PNG.
 
-V6 FINAL RENDER (branch v6, from V5 commit 2fd510f). Binding geometry:
-v6-layout-spec.md. Canvas 1024x1024. Header 0-140; 3 heroes ONE row
-145-390 (cards 320x245, illustration panels 318x150, shared baseline
-y=296); 12 minis 6x2 395-715 (cards 156x156, illustration panels
-IDENTICAL 154x76); map + newswire 720-955; footer 960-1024.
+V7 FINAL RENDER (branch v7, from V6 commit 3d5c27c). Binding geometry:
+v7-layout-spec.md. Canvas 1024x1024. Header 0-140 (dominant date
+masthead + colour-coded region-count strip + stats); 3 heroes ONE row
+145-390 (cards 320x245, illustration panels 318x150 with navy title
+bands, shared baseline y=296); 12 minis 6x2 395-715 (cards 156x156,
+illustration panels IDENTICAL 154x76, each with a black in-image label
+strip and a 1-3 line summary); map + newswire 720-955 (region-colour
+map pins); DATE CHECK box in the footer zone 960-1024.
+
+V7 changes vs V6 (documented in v7-layout-spec.md): dominant date
+masthead + region strip; heroes redrawn (faces + nameplates + summit
+banner; Peace Palace with clock tower + Myanmar flag; COP31 landscape
+with globe + thermometer + red CUT stamp); minis gain summaries and
+label strips and the 3 badge collisions are fixed; Africa (Jepchirchir)
+and Latin America (Hegseth) promoted to illustrated minis, Yunus home
+and the Gaza tank raid demoted to the newswire (renumbered 1-35);
+fact fixes: Han headline rewritten, Mongolia sharpened, Houthis
+"over two days", Gaza deaths reworded, asset-seizure summary tightened,
+"Sit Korea" typo fixed; map pins colour-coded by region; DATE CHECK
+promoted to a bold red-bordered box.
 
 35 stories: 3 heroes + 12 minis + 20 newswire (V5 had 50; 15 dropped,
 see v6-layout-spec.md). Stats strip: 9-6 ICJ, 99 GTA VI Metacritic,
@@ -76,6 +91,27 @@ LAND = (222, 205, 165)
 LAND_LINE = (170, 150, 110)
 PALE_SKY = (216, 228, 238)
 NIGHT = (36, 42, 64)
+NAVY = (24, 42, 70)
+# Region colours (V7): shared by the header region strip and the map pins.
+REGION_COLORS = {
+    "Asia": (204, 102, 0),
+    "Europe": (29, 78, 121),
+    "North America": (110, 60, 150),
+    "Latin America": (150, 110, 30),
+    "Africa": (46, 125, 50),
+    "Middle East": (158, 27, 27),
+    "Oceania": (14, 107, 92),
+}
+# Region counts computed from news.json (35 stories, V7 numbering):
+# Asia 10, Europe 11, North America 5, Middle East 5, Africa 2,
+# Oceania 1, Latin America 1. Computed live in main(); this dict is the
+# display order for the strip.
+REGION_STRIP_ORDER = ["Asia", "Europe", "North America", "Middle East",
+                      "Africa", "Latin America", "Oceania"]
+REGION_STRIP_LABEL = {"Asia": "ASIA", "Europe": "EUROPE",
+                      "North America": "N. AMERICA", "Middle East": "MIDDLE EAST",
+                      "Africa": "AFRICA", "Latin America": "LATIN AM.",
+                      "Oceania": "OCEANIA"}
 
 
 def font(path, size):
@@ -138,14 +174,45 @@ def num_badge(draw, x, y, n, d=18):
     draw.text((x + (d - tw) / 2, y + 2), t, font=f, fill=(255, 255, 255))
 
 
-def red_pin_badge(draw, x, y, n, d=16):
-    """Red map pin badge (white number); x, y are the badge centre."""
+def red_pin_badge(draw, x, y, n, d=16, fill=RED):
+    """Map pin badge (white number); x, y are the badge centre.
+    V7: fill is the story's region colour (default red)."""
     r = d // 2
-    draw.ellipse([x - r, y - r, x + r, y + r], fill=RED, outline=(255, 255, 255), width=1)
+    draw.ellipse([x - r, y - r, x + r, y + r], fill=fill, outline=(255, 255, 255), width=1)
     f = font(SANS_B, 10)
     t = str(n)
     tw = f.getlength(t)
     draw.text((x - tw / 2, y - 6), t, font=f, fill=(255, 255, 255))
+
+
+def label_strip(d, x, y, w, h, text):
+    """Black in-image label strip along the bottom of a mini panel
+    (panel origin x, y; panel w x h). Fitted width, white bold text.
+    The strip occupies the bottom 13px; mini art must keep that band
+    clear of essential detail (bars/lines end above y+63)."""
+    f = font(SANS_B, 8)
+    bw = min(w, int(f.getlength(text)) + 12)
+    d.rectangle([x, y + h - 13, x + bw, y + h], fill=INK)
+    d.text((x + 6, y + h - 11), text, font=f, fill=(255, 255, 255))
+
+
+def star(d, cx, cy, r, fill):
+    """Five-point star polygon (drawn, not a font glyph: U+2605 renders
+    as a hollow rectangle in Liberation Sans)."""
+    pts = []
+    for i in range(10):
+        ang = math.radians(-90 + i * 36)
+        rr = r if i % 2 == 0 else r * 0.45
+        pts.append((cx + rr * math.cos(ang), cy + rr * math.sin(ang)))
+    d.polygon(pts, fill=fill)
+
+
+MINI_STRIP = {4: "IPO $83 \u00b7 $81.3BN", 5: "GTA VI \u00b7 OUT NOW",
+              6: "KERCH BRIDGE \u00b7 RAIL HALTED", 7: "GREENLAND \u00b7 109\u20130",
+              8: "AKVAN \u00b7 90\u2013100 KM/H", 9: "SUNEUNG \u00b7 551,864",
+              10: "4.9% \u00b7 43,500 JOBS LOST", 11: "NAIROBI \u00b7 3 YEARS",
+              12: "CLAIM \u00b7 3 TANKERS", 13: "PIF TOWER \u00b7 RIYADH",
+              14: "ASSET-SEIZURE \u00b7 18 YEARS", 15: "QUITO \u00b7 HONDURAS"}
 
 
 # ---------------------------------------------------------------- map
@@ -331,25 +398,30 @@ CONTINENTS = [NORTH_AMERICA, GREENLAND, SOUTH_AMERICA, EURASIA, AFRICA,
               MADAGASCAR, UK, IRELAND, ICELAND, JAPAN, SUMATRA, JAVA,
               BORNEO, NEW_GUINEA, SULAWESI, AUSTRALIA, NZ_NORTH, NZ_SOUTH]
 
-# Map pins: (story n, dot (x, y), badge (x, y)). V6 spec coordinates,
-# kept exactly. Pin 5 is DELIBERATELY ABSENT: GTA VI is "Worldwide", so it
-# gets a legend badge instead of a geographic dot (see module docstring).
-# Pin 16 (Bogota) is gone: the Colombia strike story was dropped in V6.
+# Map pins: (story n, dot (x, y), badge (x, y), region). V7 numbering
+# (Africa #11 Nairobi and Latin America #15 Quito are now illustrated;
+# Yunus #11 and the Gaza raid #13 of V6 are demoted to the newswire).
+# Pin 5 is DELIBERATELY ABSENT: GTA VI is "Worldwide", so it gets a
+# legend badge instead of a geographic dot. Pin dots use the same
+# equirectangular projection as the outlines (1.0667 px/deg): Nairobi
+# (36.8E, 1.3S) -> (261, 855); Quito (78.5W, 0.2S) -> (138, 854).
+# Pin 4 (New York) nudged to (145, 812), on the coast. Badge offsets
+# keep every pair of badges >=16px apart (checked in test_v7.py).
 PINS = [
-    (1, (344, 830), (344, 830)),
-    (2, (227, 798), (211, 788)),
-    (3, (255, 815), (237, 815)),
-    (4, (143, 811), (129, 801)),
-    (6, (261, 806), (261, 790)),
-    (7, (235, 795), (249, 779)),
-    (8, (313, 833), (329, 841)),
-    (9, (357, 814), (357, 814)),
-    (10, (383, 890), (383, 890)),
-    (11, (318, 829), (300, 815)),
-    (12, (282, 826), (298, 838)),
-    (13, (259, 820), (245, 834)),
-    (14, (272, 828), (272, 844)),
-    (15, (336, 861), (336, 861)),
+    (1, (344, 830), (344, 830), "Asia"),
+    (2, (227, 798), (211, 788), "Europe"),
+    (3, (255, 815), (237, 815), "Europe"),
+    (4, (145, 812), (129, 801), "North America"),
+    (6, (261, 806), (261, 790), "Europe"),
+    (7, (235, 795), (249, 779), "Europe"),
+    (8, (313, 833), (329, 841), "Asia"),
+    (9, (357, 814), (357, 814), "Asia"),
+    (10, (383, 890), (383, 890), "Oceania"),
+    (11, (261, 855), (261, 855), "Africa"),
+    (12, (282, 826), (298, 838), "Middle East"),
+    (13, (272, 828), (284, 852), "Middle East"),
+    (14, (336, 861), (336, 861), "Asia"),
+    (15, (138, 854), (138, 854), "Latin America"),
 ]
 
 
@@ -357,8 +429,9 @@ def draw_map(d):
     """World map frame (24, 740, 396, 212) with recognisable continents.
 
     Ocean fill, tan land with darker coastline, 14 geographic pins (1-4,
-    6-15) with leader lines where the badge is offset from the dot, and the
-    legend including the GLOBAL badge for story 5 (no dot on the map).
+    6-15) colour-coded by region (same colours as the header region
+    strip), with leader lines where the badge is offset from the dot,
+    and the legend including the GLOBAL badge for story 5 (no dot).
     Returns the list of plotted pin numbers (for the acceptance test).
     """
     fx, fy, fw, fh = 24, 740, 396, 212
@@ -374,37 +447,43 @@ def draw_map(d):
         d.line([30, gy, 414, gy], fill=(190, 210, 224), width=1)
     for poly in CONTINENTS:
         d.polygon(project_poly(poly), fill=LAND, outline=LAND_LINE)
-    # pins: leader line first, then dot, then badge
-    for n, dot, badge in PINS:
+    # pins: leader line first, then dot, then badge (region colours)
+    for n, dot, badge, region in PINS:
+        col = REGION_COLORS[region]
         if badge != dot:
-            d.line([dot, badge], fill=RED, width=1)
-    for n, dot, badge in PINS:
+            d.line([dot, badge], fill=col, width=1)
+    for n, dot, badge, region in PINS:
+        col = REGION_COLORS[region]
         d.ellipse([dot[0] - 3, dot[1] - 3, dot[0] + 3, dot[1] + 3],
-                  fill=RED, outline=(255, 255, 255), width=1)
-    for n, dot, badge in PINS:
-        red_pin_badge(d, badge[0], badge[1], n)
+                  fill=col, outline=(255, 255, 255), width=1)
+    for n, dot, badge, region in PINS:
+        red_pin_badge(d, badge[0], badge[1], n, fill=REGION_COLORS[region])
     # legend (inside frame, below the plot): GLOBAL badge for story 5
     lf = font(SANS, 9)
     red_pin_badge(d, 36, 927, 5, d=13)
     d.text((47, 922), "GLOBAL: GTA VI (story 5) is worldwide \u2014 no map dot.",
            font=lf, fill=INK)
     d.text((30, 934),
-           "Pins 1\u201315 match stories 1\u201315. Asia, Europe, N. Am., Africa, M. East, Oceania.",
+           "Pins 1\u201315 match stories 1\u201315. Pin colours match the region strip above.",
            font=lf, fill=MUTED)
-    return [n for n, _, _ in PINS]
+    return [n for n, _, _, _ in PINS]
 
 
 # ---------------------------------------------------------------- heroes
-# Each draws a real editorial scene into a (w x h) panel, w=236, h=120.
+# Each draws a real editorial scene into a (w x h) panel, w=318, h=150,
+# with a navy title band across the bottom 16px (y+134..150).
 # Foreground / midground / background depth, not flat bands.
 
 # ---------------------------------------------------------------- heroes
-# V6: THREE heroes, each 318x150 (was 4 x 236x120 in V5). Scenes are
-# redesigned for the wider/taller panel, not stretched V5 art.
+# V7: THREE heroes, each 318x150. Scenes are redrawn (not stretched V6
+# art): distinct faces + nameplates + summit banner; Peace Palace with
+# clock tower + Myanmar flag; COP31 landscape with globe + thermometer
+# + red CUT stamp. Each ends in a navy title band.
 
 def hero_summit(d, x, y, w, h=150):
-    """Shenzhen summit: skyline behind, three flags, peace banner as focal
-    point, round table with three seated leaders in the foreground."""
+    """V7: Shenzhen summit with DISTINCT faces + hair + nameplates.
+    Skyline behind, three flags, peace banner, round table; navy band
+    "APEC 2026 · SHENZHEN" across the bottom 16px of the panel."""
     d.rectangle([x, y, x + w, y + h], fill=PALE_SKY)
     # background: pale sky + clouds (kept clear of the chip corner)
     d.ellipse([x + 90, y + 6, x + 122, y + 16], fill=(255, 255, 255))
@@ -430,7 +509,7 @@ def hero_summit(d, x, y, w, h=150):
     # hills + lake
     d.polygon([(x, y + 96), (x + 80, y + 70), (x + 160, y + 96)], fill=(110, 145, 105))
     d.polygon([(x + 150, y + 96), (x + 240, y + 68), (x + w, y + 96)], fill=(96, 132, 94))
-    d.rectangle([x, y + 96, x + w, y + 116], fill=(140, 175, 200))
+    d.rectangle([x, y + 96, x + w, y + 112], fill=(140, 175, 200))
     d.line([x + 16, y + 102, x + 90, y + 102], fill=(200, 225, 240), width=1)
     d.line([x + 200, y + 106, x + 300, y + 106], fill=(200, 225, 240), width=1)
     # three flags on poles, behind the banner
@@ -448,8 +527,8 @@ def hero_summit(d, x, y, w, h=150):
                     d.ellipse([sx, sy, sx + 1, sy + 1], fill=(255, 255, 255))
         elif code == "CN":
             d.rectangle([px, y + 32, px + 46, y + 48], fill=(222, 41, 16))
-            d.text((px + 5, y + 33), "\u2605", font=font(SANS_B, 12), fill=(255, 215, 0))
-            d.text((px + 20, y + 33), "\u2605", font=font(SANS_B, 7), fill=(255, 215, 0))
+            star(d, px + 11, y + 40, 5, (255, 215, 0))
+            star(d, px + 24, y + 36, 3, (255, 215, 0))
         else:
             d.rectangle([px, y + 32, px + 46, y + 37], fill=(255, 255, 255))
             d.rectangle([px, y + 37, px + 46, y + 42], fill=(0, 57, 166))
@@ -462,116 +541,206 @@ def hero_summit(d, x, y, w, h=150):
     bf = font(SANS_B, 13)
     t = "DECLARATION TOWARD PEACE"
     d.text((x + w // 2 - bf.getlength(t) / 2, y + 63), t, font=bf, fill=RED)
-    # foreground: three seated leaders (dark suits, three skin-tone heads)
-    for cx, suit, skin in [(x + 70, (30, 30, 40), (232, 190, 150)),
-                           (x + w // 2, (40, 30, 30), (240, 200, 160)),
-                           (x + w - 70, (30, 38, 50), (225, 185, 145))]:
+    # foreground: three seated leaders with distinct faces, hair, ties
+    leaders = [(x + 70, (30, 30, 40), (232, 190, 150), (235, 205, 90),
+                (178, 34, 52), "TRUMP"),
+               (x + w // 2, (40, 30, 30), (240, 200, 160), (25, 25, 25),
+                (120, 20, 20), "XI"),
+               (x + w - 70, (30, 38, 50), (225, 185, 145), (178, 178, 178),
+                (0, 57, 166), "PUTIN")]
+    for cx, suit, skin, hair, tie, name in leaders:
+        # hair: top half of the head
+        d.pieslice([cx - 9, y + 78, cx + 9, y + 94], 180, 360, fill=hair)
         d.ellipse([cx - 9, y + 80, cx + 9, y + 98], fill=skin)
+        d.pieslice([cx - 9, y + 78, cx + 9, y + 92], 180, 360, fill=hair)
+        # eyes + smile
+        d.ellipse([cx - 4, y + 87, cx - 2, y + 89], fill=DARK)
+        d.ellipse([cx + 2, y + 87, cx + 4, y + 89], fill=DARK)
+        d.arc([cx - 4, y + 89, cx + 4, y + 95], 0, 180, fill=DARK, width=1)
+        # suit + shirt + tie (table covers below y+104)
         d.polygon([(cx - 15, y + 118), (cx - 12, y + 98), (cx + 12, y + 98),
                    (cx + 15, y + 118)], fill=suit)
-        d.polygon([(cx - 3, y + 98), (cx, y + 107), (cx + 3, y + 98)], fill=(255, 255, 255))
-    # foreground: big round table
-    d.ellipse([x + 36, y + 108, x + w - 36, y + 146], fill=(122, 74, 44))
-    d.ellipse([x + 36, y + 104, x + w - 36, y + 134], fill=(150, 96, 58))
-    d.ellipse([x + 36, y + 104, x + w - 36, y + 116], fill=(178, 120, 72))
-    # papers + pens on the table
+        d.polygon([(cx - 3, y + 98), (cx, y + 104), (cx + 3, y + 98)], fill=(255, 255, 255))
+        d.polygon([(cx - 2, y + 99), (cx + 2, y + 99), (cx, y + 106)], fill=tie)
+    # foreground: big round table (flattened to end above the navy band)
+    d.ellipse([x + 36, y + 108, x + w - 36, y + 132], fill=(122, 74, 44))
+    d.ellipse([x + 36, y + 104, x + w - 36, y + 118], fill=(178, 120, 72))
+    # papers on the table
     for px in (x + 66, x + w // 2 - 14, x + w - 94):
-        d.rectangle([px, y + 110, px + 28, y + 120], fill=(255, 255, 255))
+        d.rectangle([px, y + 110, px + 28, y + 118], fill=(255, 255, 255))
         d.line([px + 3, y + 113, px + 25, y + 113], fill=(150, 150, 150), width=1)
-        d.line([px + 3, y + 117, px + 20, y + 117], fill=(150, 150, 150), width=1)
-    d.ellipse([x + w // 2 - 5, y + 122, x + w // 2 + 5, y + 132], fill=GOLD)
+        d.line([px + 3, y + 116, px + 20, y + 116], fill=(150, 150, 150), width=1)
+    # nameplates on the table front
+    nf = font(SANS_B, 8)
+    for cx, _, _, _, _, name in leaders:
+        d.rectangle([cx - 24, y + 119, cx + 24, y + 131], fill=(255, 255, 255),
+                    outline=INK, width=1)
+        d.text((cx - nf.getlength(name) / 2, y + 121), name, font=nf, fill=INK)
+    # navy title band
+    d.rectangle([x, y + 134, x + w, y + 150], fill=NAVY)
+    bf2 = font(SANS_B, 10)
+    t2 = "APEC 2026 \u00b7 SHENZHEN"
+    d.text((x + w // 2 - bf2.getlength(t2) / 2, y + 137), t2, font=bf2,
+           fill=(255, 255, 255))
+
 
 
 def hero_icj(d, x, y, w, h=150):
-    """ICJ: courthouse pediment + columns, big scales of justice in front,
-    red 9-6 verdict on the pediment, steps at the base."""
-    d.rectangle([x, y, x + w, y + h], fill=(233, 227, 211))
-    # pediment with 9-6 verdict
-    d.polygon([(x + 24, y + 34), (x + w // 2, y + 6), (x + w - 24, y + 34)],
-              fill=(200, 188, 158))
-    d.polygon([(x + 34, y + 32), (x + w // 2, y + 10), (x + w - 34, y + 32)],
-              fill=(214, 202, 172))
-    vf = font(SERIF_B, 26)
-    t = "9\u20136"
-    d.text((x + w // 2 - vf.getlength(t) / 2, y + 10), t, font=vf, fill=RED)
-    # entablature + columns
-    d.rectangle([x + 16, y + 34, x + w - 16, y + 40], fill=(220, 210, 182))
-    for cx in range(x + 28, x + w - 40, 48):
-        d.rectangle([cx - 4, y + 40, cx + 20, y + 44], fill=(220, 210, 182))
-        d.rectangle([cx, y + 44, cx + 16, y + 112], fill=(245, 240, 224))
-        d.line([cx + 5, y + 44, cx + 5, y + 112], fill=(215, 205, 175), width=1)
-        d.line([cx + 11, y + 44, cx + 11, y + 112], fill=(215, 205, 175), width=1)
-        d.rectangle([cx - 4, y + 112, cx + 20, y + 116], fill=(220, 210, 182))
+    """V7: Peace Palace, The Hague — red-brick building with pitched
+    roofs, central clock tower, arched windows, Myanmar flag, small
+    scales of justice in front, red 9-6 badge, navy band
+    "WORLD COURT · THE HAGUE"."""
+    d.rectangle([x, y, x + w, y + h], fill=(238, 228, 205))
+    # Myanmar flag, left (green / yellow / red + white star)
+    d.line([x + 34, y + 18, x + 34, y + 72], fill=DARK, width=2)
+    d.ellipse([x + 32, y + 16, x + 36, y + 20], fill=GOLD)
+    d.rectangle([x + 34, y + 22, x + 70, y + 29], fill=(40, 130, 60))
+    d.rectangle([x + 34, y + 29, x + 70, y + 36], fill=(240, 210, 60))
+    d.rectangle([x + 34, y + 36, x + 70, y + 43], fill=(200, 40, 40))
+    star(d, x + 52, y + 32, 5, (255, 255, 255))
+    # main brick block + pitched roof
+    d.rectangle([x + 30, y + 54, x + w - 30, y + 118], fill=(186, 128, 96))
+    d.polygon([(x + 30, y + 54), (x + w // 2, y + 30), (x + w - 30, y + 54)],
+              fill=(120, 60, 50))
+    d.rectangle([x + 30, y + 54, x + w - 30, y + 58], fill=(240, 230, 210))
+    # brick courses
+    for by in range(y + 62, y + 116, 8):
+        d.line([x + 30, by, x + w - 30, by], fill=(170, 112, 82), width=1)
+    # arched windows (white frame, dark arch)
+    for cx in (x + 64, x + 104, x + 214, x + 254):
+        d.rectangle([cx - 11, y + 70, cx + 11, y + 102], fill=(240, 230, 210))
+        d.pieslice([cx - 11, y + 60, cx + 11, y + 80], 180, 360,
+                   fill=(240, 230, 210))
+        d.rectangle([cx - 9, y + 72, cx + 9, y + 100], fill=(70, 55, 48))
+        d.pieslice([cx - 9, y + 62, cx + 9, y + 80], 180, 360, fill=(70, 55, 48))
+        d.line([cx, y + 72, cx, y + 100], fill=(120, 110, 100), width=1)
+    # central clock tower (rises above the roof) + cap
+    d.rectangle([x + 138, y + 8, x + 180, y + 118], fill=(168, 112, 82))
+    d.polygon([(x + 136, y + 10), (x + 159, y + 0), (x + 182, y + 10)],
+              fill=(120, 60, 50))
+    d.ellipse([x + 145, y + 18, x + 173, y + 46], fill=(255, 255, 255),
+              outline=INK, width=1)
+    d.line([x + 159, y + 32, x + 159, y + 24], fill=INK, width=2)
+    d.line([x + 159, y + 32, x + 165, y + 36], fill=INK, width=2)
+    d.ellipse([x + 157, y + 30, x + 161, y + 34], fill=INK)
+    # small tower windows
+    for wy in (y + 56, y + 76):
+        d.rectangle([x + 152, wy, x + 166, wy + 14], fill=(70, 55, 48))
+    # door at the tower base
+    d.rectangle([x + 148, y + 94, x + 170, y + 118], fill=(70, 55, 48))
     # steps
-    for i, sw in enumerate((240, 258, 276, 294)):
-        d.rectangle([x + w // 2 - sw // 2, y + 116 + i * 6,
-                     x + w // 2 + sw // 2, y + 121 + i * 6], fill=(200, 190, 164))
-    # scales of justice, large, centre foreground
-    cx = x + w // 2
-    d.rectangle([cx - 20, y + 130, cx + 20, y + 137], fill=GOLD)
-    d.rectangle([cx - 2, y + 58, cx + 2, y + 130], fill=GOLD)
-    d.polygon([(cx - 4, y + 52), (cx, y + 45), (cx + 4, y + 52)], fill=GOLD)
-    d.line([cx - 54, y + 64, cx + 54, y + 64], fill=GOLD, width=4)
-    for sgn in (-1, 1):
-        ex = cx + sgn * 54
-        d.line([ex, y + 64, ex, y + 78], fill=GOLD, width=2)
-        d.polygon([(ex - 22, y + 78), (ex + 22, y + 78), (ex, y + 100)], fill=GOLD)
-        d.polygon([(ex - 17, y + 80), (ex + 17, y + 80), (ex, y + 95)],
-                  fill=(190, 150, 40))
+    d.rectangle([x + w // 2 - 110, y + 118, x + w // 2 + 110, y + 124],
+                fill=(200, 190, 164))
+    d.rectangle([x + w // 2 - 125, y + 124, x + w // 2 + 125, y + 130],
+                fill=(188, 178, 152))
     # small robed figures flanking the scales
-    for fx in (x + 44, x + w - 44):
-        d.ellipse([fx - 7, y + 96, fx + 7, y + 110], fill=(232, 190, 150))
-        d.polygon([(fx - 12, y + 138), (fx - 9, y + 110), (fx + 9, y + 110),
-                   (fx + 12, y + 138)], fill=(40, 40, 48))
+    for fx in (x + 92, x + w - 92):
+        d.ellipse([fx - 7, y + 98, fx + 7, y + 112], fill=(232, 190, 150))
+        d.polygon([(fx - 12, y + 132), (fx - 9, y + 112), (fx + 9, y + 112),
+                   (fx + 12, y + 132)], fill=(40, 40, 48))
+    # scales of justice, smaller, centre foreground
+    cx = x + w // 2
+    d.rectangle([cx - 16, y + 124, cx + 16, y + 129], fill=GOLD)
+    d.rectangle([cx - 2, y + 86, cx + 2, y + 124], fill=GOLD)
+    d.polygon([(cx - 4, y + 82), (cx, y + 76), (cx + 4, y + 82)], fill=GOLD)
+    d.line([cx - 40, y + 92, cx + 40, y + 92], fill=GOLD, width=3)
+    for sgn in (-1, 1):
+        ex = cx + sgn * 40
+        d.line([ex, y + 92, ex, y + 102], fill=GOLD, width=2)
+        d.polygon([(ex - 16, y + 102), (ex + 16, y + 102), (ex, y + 118)], fill=GOLD)
+        d.polygon([(ex - 12, y + 104), (ex + 12, y + 104), (ex, y + 114)],
+                  fill=(190, 150, 40))
+    # red 9-6 badge, top-right (clear of the VERIFIED chip above it)
+    d.ellipse([x + w - 53, y + 25, x + w - 23, y + 55], fill=RED,
+              outline=(255, 255, 255), width=2)
+    vf = font(SERIF_B, 15)
+    t = "9\u20136"
+    d.text((x + w - 38 - vf.getlength(t) / 2, y + 32), t, font=vf,
+           fill=(255, 255, 255))
+    # navy title band
+    d.rectangle([x, y + 134, x + w, y + 150], fill=NAVY)
+    bf2 = font(SANS_B, 10)
+    t2 = "WORLD COURT \u00b7 THE HAGUE"
+    d.text((x + w // 2 - bf2.getlength(t2) / 2, y + 137), t2, font=bf2,
+           fill=(255, 255, 255))
+
 
 
 def hero_cop31(d, x, y, w, h=150):
-    """COP31: big draft document with FOSSIL FUELS struck through in red,
-    globe + leaf at right, wind turbine and sun."""
+    """V7: COP31 landscape — draft document with FOSSIL FUELS struck
+    through + red CUT stamp, globe + leaf, red thermometer, wind
+    turbine on the hills, navy band "COP31 · ANTALYA"."""
     d.rectangle([x, y, x + w, y + h], fill=(214, 232, 220))
     # sun, top-right
     d.ellipse([x + w - 44, y + 6, x + w - 16, y + 34], fill=(255, 220, 120))
-    # draft document, left ~55%
-    dx, dy, dw, dh = x + 14, y + 10, 180, 130
+    # hills along the bottom (behind document and globe)
+    d.polygon([(x, y + 118), (x + 120, y + 104), (x + 200, y + 118),
+               (x + w, y + 108), (x + w, y + 134), (x, y + 134)],
+              fill=(150, 185, 140))
+    # wind turbine on the right hill (grey-blue, not white: white on the
+    # pale sky was barely visible in V6)
+    tx = x + w - 26
+    d.line([tx, y + 96, tx, y + 130], fill=(120, 130, 140), width=3)
+    for ang in (90, 210, 330):
+        a = math.radians(ang)
+        d.line([tx, y + 96, tx + 14 * math.cos(a), y + 96 + 14 * math.sin(a)],
+               fill=(120, 130, 140), width=3)
+    d.ellipse([tx - 3, y + 93, tx + 3, y + 99], fill=(120, 130, 140))
+    # draft document, left
+    dx, dy, dw, dh = x + 14, y + 10, 176, 110
     d.rectangle([dx, dy, dx + dw, dy + dh], fill=(255, 255, 255),
                 outline=(150, 150, 150), width=1)
     d.rectangle([dx, dy, dx + dw, dy + 24], fill=(235, 240, 235))
     tf = font(SANS_B, 14)
     d.text((dx + 10, dy + 4), "COP31 DRAFT", font=tf, fill=INK)
-    for i, ln in enumerate([120, 148, 132, 110]):
-        d.rectangle([dx + 10, dy + 34 + i * 10, dx + 10 + ln, dy + 37 + i * 10],
+    for i, ln in enumerate([120, 148, 132]):
+        d.rectangle([dx + 10, dy + 32 + i * 9, dx + 10 + ln, dy + 35 + i * 9],
                     fill=(205, 205, 205))
-    ff = font(SANS_B, 17)
+    ff = font(SANS_B, 16)
     t = "FOSSIL FUELS"
-    d.text((dx + 10, dy + 76), t, font=ff, fill=(120, 120, 120))
-    d.line([dx + 6, dy + 86, dx + 16 + ff.getlength(t), dy + 86], fill=RED, width=5)
-    # crossed-out $120bn target line
-    sf = font(SANS_B, 13)
+    d.text((dx + 10, dy + 62), t, font=ff, fill=(120, 120, 120))
+    d.line([dx + 6, dy + 72, dx + 16 + ff.getlength(t), dy + 72], fill=RED, width=5)
+    sf = font(SANS_B, 12)
     t2 = "$120bn target"
-    d.text((dx + 10, dy + 98), t2, font=sf, fill=(120, 120, 120))
-    d.line([dx + 6, dy + 105, dx + 14 + sf.getlength(t2), dy + 105], fill=RED, width=3)
-    d.text((dx + 10, dy + 116), "talks run to Friday", font=font(SANS, 11), fill=MUTED)
-    # globe, right
-    gx, gy, gr = x + w - 56, y + 92, 38
+    d.text((dx + 10, dy + 84), t2, font=sf, fill=(120, 120, 120))
+    d.line([dx + 6, dy + 91, dx + 14 + sf.getlength(t2), dy + 91], fill=RED, width=3)
+    d.text((dx + 10, dy + 100), "talks run to Friday", font=font(SANS, 11), fill=MUTED)
+    # globe, right of the document
+    gx, gy, gr = x + 228, y + 64, 30
     d.ellipse([gx - gr, gy - gr, gx + gr, gy + gr], fill=SEA)
-    d.ellipse([gx - 30, gy - 34, gx - 2, gy - 8], fill=GREEN)
-    d.ellipse([gx - 10, gy + 2, gx + 28, gy + 30], fill=GREEN)
-    d.ellipse([gx + 14, gy - 32, gx + 34, gy - 12], fill=GREEN)
+    d.ellipse([gx - 24, gy - 26, gx - 2, gy - 6], fill=GREEN)
+    d.ellipse([gx - 8, gy + 2, gx + 22, gy + 24], fill=GREEN)
+    d.ellipse([gx + 12, gy - 26, gx + 26, gy - 10], fill=GREEN)
     d.arc([gx - gr, gy - gr, gx + gr, gy + gr], start=90, end=270,
           fill=(255, 255, 255), width=2)
     d.ellipse([gx - gr, gy - gr, gx + gr, gy + gr], outline=(255, 255, 255), width=2)
     # leaf overlapping the globe
-    d.polygon([(gx - 62, gy + 28), (gx - 40, gy - 2), (gx - 18, gy + 26)],
+    d.polygon([(gx - 34, gy + 22), (gx - 16, gy - 2), (gx + 2, gy + 20)],
               fill=TEAL)
-    d.line([gx - 58, gy + 24, gx - 22, gy + 14], fill=(255, 255, 255), width=2)
-    # wind turbine, bottom-right below the globe
-    tx = x + w - 118
-    d.line([tx, y + 108, tx, y + 142], fill=(255, 255, 255), width=3)
-    for ang in (90, 210, 330):
-        a = math.radians(ang)
-        d.line([tx, y + 108, tx + 16 * math.cos(a), y + 108 + 16 * math.sin(a)],
-               fill=(255, 255, 255), width=3)
-    d.ellipse([tx - 3, y + 105, tx + 3, y + 111], fill=(255, 255, 255))
+    d.line([gx - 30, gy + 18, gx - 2, gy + 10], fill=(255, 255, 255), width=2)
+    # red thermometer, far right
+    d.rectangle([x + 274, y + 26, x + 286, y + 108], fill=(255, 255, 255),
+                outline=INK, width=1)
+    d.rectangle([x + 277, y + 60, x + 283, y + 108], fill=RED)
+    d.ellipse([x + 271, y + 103, x + 289, y + 121], fill=RED,
+              outline=(255, 255, 255), width=1)
+    for ty in (36, 48, 60, 72, 84, 96):
+        d.line([x + 286, y + ty, x + 292, y + ty], fill=INK, width=1)
+    # red CUT stamp, rotated, over the document corner
+    stamp = Image.new("RGBA", (70, 30), (0, 0, 0, 0))
+    sd = ImageDraw.Draw(stamp)
+    sd.rectangle([2, 2, 67, 27], outline=RED, width=3)
+    stf = font(SANS_B, 17)
+    sd.text(((70 - stf.getlength("CUT")) / 2, 4), "CUT", font=stf, fill=RED)
+    stamp = stamp.rotate(-18, expand=True, resample=Image.BICUBIC)
+    d._image.paste(stamp, (dx + 112, dy + 82), stamp)
+    # navy title band
+    d.rectangle([x, y + 134, x + w, y + 150], fill=NAVY)
+    bf2 = font(SANS_B, 10)
+    t2 = "COP31 \u00b7 ANTALYA"
+    d.text((x + w // 2 - bf2.getlength(t2) / 2, y + 137), t2, font=bf2,
+           fill=(255, 255, 255))
+
 
 
 HEROES = {1: hero_summit, 2: hero_icj, 3: hero_cop31}
@@ -588,14 +757,12 @@ VERIFIED_CHIP = {1: True, 2: True, 3: True}
 # Real scenes with depth and details, not placeholder icons.
 
 def mini_anthropic(d, x, y, w=154, h=76):
-    """Anthropic IPO mini: rising bars, soaring line, big $81.3bn, ANT
-    ticker tag. NO 'record' / 'largest IPO ever' wording: the figures rest
-    on Investopedia alone, so no superlative and no VERIFIED chip."""
+    """Anthropic IPO mini: rising bars, soaring line, ANT ticker tag.
+    The "$81.3bn" figure now lives in the black label strip (V7), so the
+    big price text is gone. NO 'record' / 'largest IPO ever' wording:
+    the figures rest on Investopedia alone, so no superlative and no
+    VERIFIED chip."""
     d.rectangle([x, y, x + w, y + h], fill=(226, 236, 226))
-    # big price, below the number badge (badge at y+12..30 would cover
-    # the "$" if the price sat at y+4)
-    pf = font(SANS_B, 16)
-    d.text((x + 6, y + 24), "$81.3bn", font=pf, fill=INK)
     # ticker tag, top-right
     tf = font(SANS_B, 9)
     tag = "ANT  $97.17  +17%"
@@ -603,20 +770,21 @@ def mini_anthropic(d, x, y, w=154, h=76):
     d.rounded_rectangle([x + w - tw - 12, y + 5, x + w - 5, y + 21],
                         radius=4, fill=INK)
     d.text((x + w - tw - 8, y + 8), tag, font=tf, fill=(255, 255, 255))
-    # bars, rising
+    # bars, rising (end above the label strip at y+63)
     bars = [8, 12, 10, 16, 22, 30]
     bw = 14
     bx = x + 10
     for i, bh in enumerate(bars):
-        d.rectangle([bx + i * (bw + 4), y + 70 - bh, bx + i * (bw + 4) + bw, y + 70],
+        d.rectangle([bx + i * (bw + 4), y + 60 - bh, bx + i * (bw + 4) + bw, y + 60],
                     fill=(120, 170, 130) if i < 4 else TEAL)
-    d.line([x + 6, y + 70, x + w - 4, y + 70], fill=INK, width=1)
+    d.line([x + 6, y + 60, x + w - 4, y + 60], fill=INK, width=1)
     # soaring line + arrow
-    pts = [(x + 14, y + 56), (x + 42, y + 52), (x + 70, y + 54),
-           (x + 98, y + 40), (x + 126, y + 32)]
+    pts = [(x + 14, y + 48), (x + 42, y + 44), (x + 70, y + 46),
+           (x + 98, y + 34), (x + 126, y + 28)]
     d.line(pts, fill=RED, width=3)
-    d.polygon([(x + 126, y + 32), (x + 114, y + 30), (x + 120, y + 42)],
+    d.polygon([(x + 126, y + 28), (x + 114, y + 26), (x + 120, y + 38)],
               fill=RED)
+    label_strip(d, x, y, w, h, MINI_STRIP[4])
 
 
 def mini_gta(d, x, y, w=154, h=76):
@@ -638,16 +806,17 @@ def mini_gta(d, x, y, w=154, h=76):
     d.rectangle([x, y + 56, x + w, y + 59], fill=(255, 60, 180))
     for lx in range(x + 6, x + w - 6, 16):
         d.rectangle([lx, y + 66, lx + 8, y + 69], fill=(255, 220, 90))
-    # controller, foreground
-    d.rounded_rectangle([x + 52, y + 52, x + 102, y + 72], radius=8, fill=(225, 225, 225))
-    d.ellipse([x + 58, y + 58, x + 64, y + 64], fill=RED)
-    d.ellipse([x + 90, y + 58, x + 96, y + 64], fill=BLUE)
-    d.rectangle([x + 74, y + 60, x + 80, y + 62], fill=DARK)
-    d.rectangle([x + 76, y + 58, x + 78, y + 64], fill=DARK)
+    # controller, foreground (raised so the label strip clears it)
+    d.rounded_rectangle([x + 52, y + 42, x + 102, y + 62], radius=8, fill=(225, 225, 225))
+    d.ellipse([x + 58, y + 48, x + 64, y + 54], fill=RED)
+    d.ellipse([x + 90, y + 48, x + 96, y + 54], fill=BLUE)
+    d.rectangle([x + 74, y + 50, x + 80, y + 52], fill=DARK)
+    d.rectangle([x + 76, y + 48, x + 78, y + 54], fill=DARK)
     # gold 99 badge, top-right
     d.ellipse([x + w - 34, y + 26, x + w - 6, y + 54], fill=GOLD, outline=(255, 255, 255), width=2)
     bf = font(SANS_B, 14)
     d.text((x + w - 29, y + 32), "99", font=bf, fill=(255, 255, 255))
+    label_strip(d, x, y, w, h, MINI_STRIP[5])
 
 
 def mini_bridge(d, x, y, w=154, h=76):
@@ -669,40 +838,52 @@ def mini_bridge(d, x, y, w=154, h=76):
     d.ellipse([x + 70, y + 18, x + 82, y + 30], fill=(255, 200, 0))
     d.ellipse([x + 88, y + 2, x + 100, y + 12], fill=(200, 200, 200))
     d.ellipse([x + 96, y - 2, x + 108, y + 8], fill=(220, 220, 220))
-    # small boat on the water
-    d.polygon([(x + 110, y + 58), (x + 140, y + 58), (x + 134, y + 66), (x + 116, y + 66)],
+    # small boat on the water (raised above the label strip)
+    d.polygon([(x + 110, y + 52), (x + 140, y + 52), (x + 134, y + 60), (x + 116, y + 60)],
               fill=(255, 255, 255))
-    d.rectangle([x + 120, y + 50, x + 130, y + 58], fill=(200, 60, 60))
+    d.rectangle([x + 120, y + 44, x + 130, y + 52], fill=(200, 60, 60))
+    label_strip(d, x, y, w, h, MINI_STRIP[6])
 
 
 def mini_greenland(d, x, y, w=154, h=76):
-    """Greenland deal: RECOGNISABLE Greenland outline (wide north coast,
-    tapering south tip, fjord-notched east coast) on pale sea, plus the
-    109-0 ballot slip."""
+    """V7 redraw: Greenland as a real scene, not a white map blob.
+    Mountain ranges with snow caps, Danish + US flags on poles, and a
+    ballot slip reading 109-0 with a red check. No stray green square."""
     d.rectangle([x, y, x + w, y + h], fill=(196, 220, 235))
-    # sea + ice floes
-    d.ellipse([x + 8, y + 58, x + 26, y + 66], fill=(255, 255, 255))
-    d.ellipse([x + 128, y + 60, x + 146, y + 68], fill=(255, 255, 255))
-    # Greenland outline, drawn large: north coast across the top, east coast
-    # with fjord notches, tapering to the southern tip at bottom centre.
-    gl = [(22, 6), (44, 4), (66, 6), (84, 10), (96, 16), (100, 24),
-          (94, 30), (98, 36), (90, 40), (92, 46), (82, 48), (78, 54),
-          (66, 56), (56, 60), (48, 54), (38, 52), (28, 46), (18, 38),
-          (12, 28), (12, 16), (22, 6)]
-    pts = [(x + px, y + py) for px, py in gl]
-    d.polygon(pts, fill=(244, 248, 244), outline=TEAL)
-    # ice-sheet shading + coastline towns
-    d.polygon([(x + 30, y + 12), (x + 58, y + 10), (x + 80, y + 18),
-               (x + 70, y + 34), (x + 44, y + 40), (x + 28, y + 28)],
-              fill=(220, 235, 240))
-    for tx, ty in [(34, 44), (58, 50), (84, 28)]:
-        d.ellipse([x + tx - 2, y + ty - 2, x + tx + 2, y + ty + 2], fill=RED)
-    # ballot slip, bottom-left overlapping the sea
-    d.rectangle([x + 6, y + 56, x + 86, y + 73], fill=(255, 255, 255), outline=INK, width=1)
-    bf = font(SANS_B, 13)
-    d.text((x + 10, y + 58), "109\u20130", font=bf, fill=RED)
-    d.text((x + 62, y + 59), "\u2713", font=font(SANS_B, 13), fill=GREEN)
-    d.text((x + 76, y + 60), "", font=bf, fill=INK)
+    # back range (pale) + snow caps
+    d.polygon([(x, y + 52), (x + 30, y + 26), (x + 55, y + 48),
+               (x + 85, y + 20), (x + 115, y + 46), (x + 140, y + 30),
+               (x + w, y + 52)], fill=(165, 185, 200))
+    for px, py in [(30, 26), (85, 20), (140, 30)]:
+        d.polygon([(x + px - 7, y + py + 7), (x + px, y + py),
+                   (x + px + 7, y + py + 7)], fill=(255, 255, 255))
+    # front range (slate) + snow caps
+    d.polygon([(x, y + 62), (x + 25, y + 40), (x + 60, y + 60),
+               (x + 95, y + 36), (x + 125, y + 58), (x + w, y + 62)],
+              fill=(110, 135, 160))
+    for px, py in [(25, 40), (95, 36)]:
+        d.polygon([(x + px - 6, y + py + 6), (x + px, y + py),
+                   (x + px + 6, y + py + 6)], fill=(255, 255, 255))
+    # Danish flag, left pole
+    d.line([x + 26, y + 14, x + 26, y + 52], fill=DARK, width=2)
+    d.rectangle([x + 26, y + 16, x + 54, y + 30], fill=(200, 16, 46))
+    d.rectangle([x + 34, y + 16, x + 38, y + 30], fill=(255, 255, 255))
+    d.rectangle([x + 26, y + 21, x + 54, y + 25], fill=(255, 255, 255))
+    # US flag, right pole
+    d.line([x + 118, y + 12, x + 118, y + 50], fill=DARK, width=2)
+    d.rectangle([x + 118, y + 14, x + 146, y + 28], fill=(255, 255, 255))
+    for i in range(4):
+        d.rectangle([x + 118, y + 14 + i * 4, x + 146, y + 16 + i * 4],
+                    fill=(178, 34, 52))
+    d.rectangle([x + 118, y + 14, x + 128, y + 21], fill=(60, 59, 110))
+    # ballot slip, bottom-left (clear of the label strip)
+    d.rectangle([x + 8, y + 46, x + 68, y + 62], fill=(255, 255, 255),
+                outline=INK, width=1)
+    bf = font(SANS_B, 12)
+    d.text((x + 12, y + 49), "109\u20130", font=bf, fill=RED)
+    d.line([x + 54, y + 56, x + 58, y + 60, x + 66, y + 50], fill=RED, width=2)
+    label_strip(d, x, y, w, h, MINI_STRIP[7])
+
 
 
 def mini_cyclone(d, x, y, w=154, h=76):
@@ -713,43 +894,46 @@ def mini_cyclone(d, x, y, w=154, h=76):
         d.arc([cx - r, cy - r, cx + r, cy + r], start=st, end=st + 260,
               fill=(255, 255, 255), width=4)
     d.ellipse([cx - 5, cy - 5, cx + 5, cy + 5], fill=(255, 200, 0))
-    # coast + houses at the bottom
+    # coast + houses at the bottom (raised above the label strip)
     d.polygon([(x, y + 58), (x + 40, y + 52), (x + 90, y + 58), (x + w, y + 54),
                (x + w, y + h), (x, y + h)], fill=(90, 120, 90))
     for hx in (14, 44, 118):
-        d.rectangle([x + hx, y + 60, x + hx + 12, y + 70], fill=(240, 220, 170))
-        d.polygon([(x + hx - 2, y + 60), (x + hx + 6, y + 54), (x + hx + 14, y + 60)],
+        d.rectangle([x + hx, y + 56, x + hx + 12, y + 64], fill=(240, 220, 170))
+        d.polygon([(x + hx - 2, y + 56), (x + hx + 6, y + 50), (x + hx + 14, y + 56)],
                   fill=(150, 60, 60))
     # rain streaks
     for rx in range(x + 8, x + w - 4, 14):
-        d.line([rx, y + 62, rx - 4, y + 72], fill=(140, 180, 220), width=2)
+        d.line([rx, y + 52, rx - 4, y + 60], fill=(140, 180, 220), width=2)
+    label_strip(d, x, y, w, h, MINI_STRIP[8])
 
 
 def mini_exam(d, x, y, w=154, h=76):
-    """Suneung exam: desk, answer sheet, pencil, wall clock."""
+    """V7: Suneung exam. The sheet carries answer bubbles (no title text,
+    so the number badge can no longer cover the "S" of SUNEUNG — that
+    text now lives in the label strip). Pencil shrunk so it no longer
+    dominates the panel."""
     d.rectangle([x, y, x + w, y + h], fill=(232, 226, 210))
     d.rectangle([x, y + 60, x + w, y + h], fill=(170, 130, 85))
-    # wall clock, top-right
-    d.ellipse([x + w - 36, y + 6, x + w - 8, y + 34], fill=(255, 255, 255), outline=INK, width=1)
-    d.line([x + w - 22, y + 20, x + w - 22, y + 10], fill=INK, width=2)
-    d.line([x + w - 22, y + 20, x + w - 14, y + 24], fill=INK, width=2)
-    # answer sheet
-    d.rectangle([x + 14, y + 8, x + 92, y + 68], fill=(255, 255, 255), outline=INK, width=1)
-    tf = font(SANS_B, 10)
-    d.text((x + 20, y + 12), "SUNEUNG  \u00b7  551,864", font=tf, fill=INK)
+    # answer sheet with bubble rows
+    d.rectangle([x + 14, y + 8, x + 92, y + 64], fill=(255, 255, 255), outline=INK, width=1)
+    filled = [1, 2, 0, 3, 1]
     for i in range(5):
-        yy = y + 28 + i * 7
-        d.text((x + 20, yy - 2), f"{i + 1}.", font=font(SANS, 8), fill=MUTED)
-        d.line([x + 32, yy + 3, x + 84, yy + 3], fill=(170, 170, 170), width=1)
-        if i == 1:
-            d.ellipse([x + 52, yy - 1, x + 60, yy + 7], fill=RED)
-            d.text((x + 53, yy - 1), "\u2713", font=font(SANS_B, 7), fill=(255, 255, 255))
-    # pencil, diagonal across the sheet
-    d.polygon([(x + 96, y + 62), (x + 138, y + 20), (x + 132, y + 14),
-               (x + 90, y + 56)], fill=(255, 200, 0))
-    d.polygon([(x + 138, y + 20), (x + 146, y + 28), (x + 140, y + 32)], fill=(220, 180, 140))
-    d.polygon([(x + 90, y + 56), (x + 96, y + 62), (x + 92, y + 68)], fill=(220, 180, 140))
-    d.rectangle([x + 128, y + 18, x + 134, y + 26], fill=(220, 100, 100))
+        yy = y + 16 + i * 9
+        d.text((x + 19, yy - 1), f"{i + 1}.", font=font(SANS, 8), fill=MUTED)
+        for b in range(4):
+            bx = x + 34 + b * 13
+            d.ellipse([bx, yy, bx + 7, yy + 7], outline=(150, 150, 150), width=1)
+            if b == filled[i]:
+                d.ellipse([bx + 1, yy + 1, bx + 6, yy + 6], fill=RED)
+    # pencil, diagonal, smaller than V6
+    d.polygon([(x + 90, y + 52), (x + 126, y + 16), (x + 132, y + 22),
+               (x + 96, y + 58)], fill=(255, 200, 0))
+    d.polygon([(x + 126, y + 16), (x + 132, y + 22), (x + 138, y + 28),
+               (x + 132, y + 32)], fill=(220, 180, 140))
+    d.polygon([(x + 90, y + 52), (x + 96, y + 58), (x + 92, y + 62)], fill=(220, 180, 140))
+    d.rectangle([x + 120, y + 18, x + 126, y + 26], fill=(220, 100, 100))
+    label_strip(d, x, y, w, h, MINI_STRIP[9])
+
 
 
 def mini_jobs(d, x, y, w=154, h=76):
@@ -769,14 +953,13 @@ def mini_jobs(d, x, y, w=154, h=76):
     bf = font(SANS_B, 15)
     d.rounded_rectangle([x + 100, y + 6, x + 148, y + 26], radius=4, fill=RED)
     d.text((x + 106, y + 9), "4.9%", font=bf, fill=(255, 255, 255))
-    # briefcase, bottom-left
-    d.rectangle([x + 12, y + 52, x + 52, y + 72], fill=(122, 74, 44))
-    d.rectangle([x + 24, y + 46, x + 40, y + 52], fill=(122, 74, 44))
-    d.line([x + 12, y + 62, x + 52, y + 62], fill=(200, 160, 110), width=2)
-    d.rectangle([x + 30, y + 60, x + 34, y + 64], fill=GOLD)
-    # "43,500 jobs lost" note
-    nf = font(SANS, 9)
-    d.text((x + 58, y + 62), "43,500 jobs lost", font=nf, fill=MUTED)
+    # briefcase, bottom-left (raised above the label strip; the
+    # "43,500 jobs lost" note is gone — the strip carries it)
+    d.rectangle([x + 12, y + 46, x + 52, y + 62], fill=(122, 74, 44))
+    d.rectangle([x + 24, y + 40, x + 40, y + 46], fill=(122, 74, 44))
+    d.line([x + 12, y + 54, x + 52, y + 54], fill=(200, 160, 110), width=2)
+    d.rectangle([x + 30, y + 52, x + 34, y + 56], fill=GOLD)
+    label_strip(d, x, y, w, h, MINI_STRIP[10])
 
 
 def mini_house(d, x, y, w=154, h=76):
@@ -804,7 +987,7 @@ def mini_house(d, x, y, w=154, h=76):
 def mini_tanker(d, x, y, w=154, h=76):
     """Tankers CLAIM: sea, tanker with containers, spiked mine, flame."""
     d.rectangle([x, y, x + w, y + h], fill=(178, 205, 224))
-    for wy in (56, 64, 71):
+    for wy in (52, 57, 61):
         d.line([x, y + wy, x + w, y + wy], fill=(255, 255, 255), width=2)
     # tanker hull + containers
     d.polygon([(x + 12, y + 40), (x + 118, y + 40), (x + 108, y + 56),
@@ -825,6 +1008,7 @@ def mini_tanker(d, x, y, w=154, h=76):
                (x + 40, y + 26), (x + 30, y + 20)], fill=ORANGE)
     d.ellipse([x + 36, y + 16, x + 46, y + 26], fill=(255, 200, 0))
     d.ellipse([x + 50, y + 2, x + 62, y + 12], fill=(200, 200, 200))
+    label_strip(d, x, y, w, h, MINI_STRIP[12])
 
 
 def mini_tank(d, x, y, w=154, h=76):
@@ -855,10 +1039,10 @@ def mini_tower(d, x, y, w=154, h=76):
     d.rectangle([x, y, x + w, y + h], fill=(30, 34, 48))
     for sx in range(x + 8, x + w - 6, 18):
         d.ellipse([sx, y + 6 + (sx % 7), sx + 2, y + 8 + (sx % 7)], fill=(255, 255, 255))
-    # tapered tower, centre-left
-    d.polygon([(x + 56, y + 70), (x + 62, y + 8), (x + 78, y + 8), (x + 84, y + 70)],
+    # tapered tower, centre-left (base raised above the label strip)
+    d.polygon([(x + 56, y + 64), (x + 62, y + 8), (x + 78, y + 8), (x + 84, y + 64)],
               fill=(140, 160, 190))
-    for wy in range(14, 68, 7):
+    for wy in range(14, 62, 7):
         d.line([x + 62, y + wy, x + 78, y + wy], fill=(220, 230, 240), width=1)
     # crown
     d.polygon([(x + 62, y + 8), (x + 70, y + 0), (x + 78, y + 8)], fill=(180, 195, 215))
@@ -870,48 +1054,117 @@ def mini_tower(d, x, y, w=154, h=76):
                fill=(255, 200, 0), width=3)
     d.ellipse([cx - 6, cy - 6, cx + 6, cy + 6], fill=ORANGE)
     d.ellipse([cx + 12, cy - 12, cx + 24, cy - 2], fill=(120, 120, 130))
-    # city lights at the base
+    # city lights at the base (raised above the label strip)
     for bx, bh in [(8, 12), (26, 18), (100, 14), (118, 20), (136, 12)]:
-        d.rectangle([x + bx, y + 70 - bh, x + bx + 12, y + 70], fill=(60, 68, 92))
-        d.rectangle([x + bx + 3, y + 70 - bh + 3, x + bx + 6, y + 70 - bh + 6],
+        d.rectangle([x + bx, y + 64 - bh, x + bx + 12, y + 64], fill=(60, 68, 92))
+        d.rectangle([x + bx + 3, y + 64 - bh + 3, x + bx + 6, y + 64 - bh + 6],
                     fill=(255, 210, 90))
-    d.rectangle([x, y + 70, x + w, y + h], fill=(20, 22, 34))
+    d.rectangle([x, y + 64, x + w, y + h], fill=(20, 22, 34))
+    label_strip(d, x, y, w, h, MINI_STRIP[13])
 
 
 def mini_gavel(d, x, y, w=154, h=76):
-    """Asset-seizure law: bill document with red seal, gavel, 18 years tag."""
+    """V7: asset-seizure law. The document carries lines + Rp1bn+ + red
+    seal only (no "ASSET-SEIZURE" title text, so the number badge can no
+    longer cover its "A" — that text now lives in the label strip).
+    The separate "18 YEARS" tag is gone; the strip carries it."""
     d.rectangle([x, y, x + w, y + h], fill=(232, 226, 210))
     # bill document
-    d.rectangle([x + 12, y + 8, x + 92, y + 68], fill=(255, 255, 255), outline=INK, width=1)
-    tf = font(SANS_B, 9)
-    d.text((x + 20, y + 12), "ASSET-SEIZURE", font=tf, fill=INK)
+    d.rectangle([x + 12, y + 8, x + 92, y + 64], fill=(255, 255, 255), outline=INK, width=1)
     for i in range(4):
-        d.line([x + 20, y + 28 + i * 7, x + 86, y + 28 + i * 7], fill=(170, 170, 170), width=1)
-    d.text((x + 20, y + 56), "Rp1bn+", font=font(SANS, 9), fill=MUTED)
+        d.line([x + 20, y + 20 + i * 7, x + 86, y + 20 + i * 7], fill=(170, 170, 170), width=1)
+    d.text((x + 20, y + 48), "Rp1bn+", font=font(SANS, 9), fill=MUTED)
     # red seal
-    d.ellipse([x + 72, y + 50, x + 88, y + 66], fill=RED)
-    d.ellipse([x + 76, y + 54, x + 84, y + 62], outline=(255, 255, 255), width=1)
-    # gavel, diagonal at right
-    d.line([x + 96, y + 18, x + 138, y + 60], fill=(122, 74, 44), width=4)
-    d.rectangle([x + 100, y + 8, x + 122, y + 26], fill=(150, 96, 58))
-    d.rectangle([x + 128, y + 58, x + 148, y + 68], fill=(150, 96, 58))
-    # "18 YEARS" tag (shortened: the full "AFTER 18 YEARS" overflowed the panel)
-    bf = font(SANS_B, 9)
-    d.rounded_rectangle([x + 96, y + 62, x + 150, y + 76], radius=4, fill=INK)
-    d.text((x + 101, y + 65), "18 YEARS", font=bf, fill=(255, 255, 255))
+    d.ellipse([x + 70, y + 46, x + 86, y + 62], fill=RED)
+    d.ellipse([x + 74, y + 50, x + 82, y + 58], outline=(255, 255, 255), width=1)
+    # gavel, diagonal at right (raised clear of the label strip)
+    d.line([x + 96, y + 14, x + 136, y + 52], fill=(122, 74, 44), width=4)
+    d.rectangle([x + 100, y + 6, x + 120, y + 22], fill=(150, 96, 58))
+    d.rectangle([x + 126, y + 50, x + 146, y + 60], fill=(150, 96, 58))
+    label_strip(d, x, y, w, h, MINI_STRIP[14])
+
+
+
+def mini_runner(d, x, y, w=154, h=76):
+    """V7 NEW (#11, Nairobi): marathon runner on a red track, Kenyan
+    flag on a pole, red BANNED stamp. Africa joins the illustrated set."""
+    d.rectangle([x, y, x + w, y + h], fill=(220, 230, 240))
+    # red BANNED stamp, top-centre
+    sf = font(SANS_B, 9)
+    d.rectangle([x + 56, y + 6, x + 108, y + 21], outline=RED, width=2)
+    d.text((x + 82 - sf.getlength("BANNED") / 2, y + 8), "BANNED", font=sf, fill=RED)
+    # Kenyan flag on a pole, right
+    d.line([x + 132, y + 10, x + 132, y + 48], fill=DARK, width=2)
+    d.rectangle([x + 132, y + 12, x + 150, y + 17], fill=(20, 20, 20))
+    d.rectangle([x + 132, y + 17, x + 150, y + 18], fill=(255, 255, 255))
+    d.rectangle([x + 132, y + 18, x + 150, y + 22], fill=(178, 34, 52))
+    d.rectangle([x + 132, y + 22, x + 150, y + 23], fill=(255, 255, 255))
+    d.rectangle([x + 132, y + 23, x + 150, y + 27], fill=(40, 130, 60))
+    # runner silhouette, mid-stride (dark, leaning forward)
+    d.ellipse([x + 71, y + 23, x + 83, y + 35], fill=(40, 40, 48))
+    d.rectangle([x + 71, y + 29, x + 83, y + 31], fill=(255, 255, 255))
+    d.line([x + 77, y + 35, x + 73, y + 49], fill=(40, 40, 48), width=4)
+    d.line([x + 73, y + 49, x + 86, y + 59], fill=(40, 40, 48), width=3)
+    d.line([x + 73, y + 49, x + 60, y + 57], fill=(40, 40, 48), width=3)
+    d.line([x + 76, y + 39, x + 89, y + 33], fill=(40, 40, 48), width=3)
+    d.line([x + 76, y + 39, x + 64, y + 43], fill=(40, 40, 48), width=3)
+    # motion lines behind the runner
+    for my in (31, 39, 47):
+        d.line([x + 8, y + my, x + 30, y + my], fill=(160, 170, 185), width=2)
+    # red running track + lane lines (above the label strip)
+    d.rectangle([x, y + 56, x + w, y + 63], fill=(178, 60, 50))
+    d.line([x, y + 59, x + w, y + 59], fill=(255, 255, 255), width=1)
+    label_strip(d, x, y, w, h, MINI_STRIP[11])
+
+
+def mini_hegseth(d, x, y, w=154, h=76):
+    """V7 NEW (#15, Quito): LatAm tour — jet over a runway, US +
+    Ecuador flags. Latin America joins the illustrated set."""
+    d.rectangle([x, y, x + w, y + h], fill=(200, 220, 235))
+    d.ellipse([x + 10, y + 6, x + 34, y + 14], fill=(255, 255, 255))
+    d.ellipse([x + 44, y + 10, x + 66, y + 17], fill=(255, 255, 255))
+    # jet, left, flying right (side view: thin fuselage, tail fin,
+    # swept main wing below, nose cone, windows)
+    d.rounded_rectangle([x + 14, y + 32, x + 64, y + 38], radius=3, fill=(60, 66, 80))
+    d.polygon([(x + 64, y + 32), (x + 72, y + 35), (x + 64, y + 38)], fill=(60, 66, 80))
+    d.polygon([(x + 18, y + 32), (x + 24, y + 22), (x + 29, y + 32)], fill=(60, 66, 80))
+    d.polygon([(x + 34, y + 38), (x + 44, y + 50), (x + 50, y + 38)], fill=(60, 66, 80))
+    d.rectangle([x + 54, y + 33, x + 62, y + 36], fill=(140, 190, 230))
+    # motion lines trailing the jet
+    d.line([x + 2, y + 32, x + 10, y + 32], fill=(160, 170, 185), width=2)
+    d.line([x + 4, y + 38, x + 12, y + 38], fill=(160, 170, 185), width=2)
+    # US flag, right
+    d.line([x + 102, y + 14, x + 102, y + 52], fill=DARK, width=2)
+    d.rectangle([x + 102, y + 16, x + 124, y + 30], fill=(255, 255, 255))
+    for i in range(4):
+        d.rectangle([x + 102, y + 16 + i * 4, x + 124, y + 18 + i * 4],
+                    fill=(178, 34, 52))
+    d.rectangle([x + 102, y + 16, x + 111, y + 23], fill=(60, 59, 110))
+    # Ecuador flag (yellow / blue / red), far right
+    d.line([x + 128, y + 14, x + 128, y + 52], fill=DARK, width=2)
+    d.rectangle([x + 128, y + 16, x + 150, y + 23], fill=(240, 210, 60))
+    d.rectangle([x + 128, y + 23, x + 150, y + 27], fill=(40, 90, 180))
+    d.rectangle([x + 128, y + 27, x + 150, y + 30], fill=(200, 40, 40))
+    # runway (above the label strip)
+    d.rectangle([x, y + 52, x + w, y + 63], fill=(120, 120, 120))
+    for rx in range(x + 8, x + w - 8, 18):
+        d.line([rx, y + 57, rx + 9, y + 57], fill=(255, 255, 255), width=2)
+    label_strip(d, x, y, w, h, MINI_STRIP[15])
 
 
 MINIS = {4: mini_anthropic, 5: mini_gta, 6: mini_bridge, 7: mini_greenland,
-         8: mini_cyclone, 9: mini_exam, 10: mini_jobs, 11: mini_house,
-         12: mini_tanker, 13: mini_tank, 14: mini_tower, 15: mini_gavel}
+         8: mini_cyclone, 9: mini_exam, 10: mini_jobs, 11: mini_runner,
+         12: mini_tanker, 13: mini_tower, 14: mini_gavel, 15: mini_hegseth}
+# V7: mini_house (Yunus) and mini_tank (Gaza raid) are demoted to the
+# newswire and no longer in MINIS; their functions stay defined above.
 
 # Short red category labels for the mini cards (fit 140px at Sans-Bold 9).
 MINI_CAT = {4: "US \u00b7 TECH", 5: "GLOBAL \u00b7 GAMES",
             6: "EUROPE \u00b7 WAR", 7: "EUROPE \u00b7 POLITICS",
             8: "ASIA \u00b7 WEATHER", 9: "ASIA \u00b7 EDUCATION",
-            10: "OCEANIA \u00b7 ECONOMY", 11: "ASIA \u00b7 UNREST",
-            12: "M. EAST \u00b7 CLAIM", 13: "M. EAST \u00b7 CONFLICT",
-            14: "M. EAST \u00b7 ATTACK", 15: "ASIA \u00b7 LAW"}
+            10: "OCEANIA \u00b7 ECONOMY", 11: "AFRICA \u00b7 SPORT",
+            12: "M. EAST \u00b7 CLAIM", 13: "M. EAST \u00b7 ATTACK",
+            14: "ASIA \u00b7 LAW", 15: "LATAM \u00b7 DEFENCE"}
 
 
 # ---------------------------------------------------------------- layout
@@ -931,27 +1184,45 @@ def main():
     img = Image.new("RGB", (W, H), PAPER)
     d = ImageDraw.Draw(img)
 
-    # ---- Section A: masthead (0-140)
-    title_f = font(SERIF_B, 42)
+    # ---- Section A: masthead (0-140). V7: the DATE is the masthead
+    # (largest type on the page); "THE WORLD IN ONE DAY" is the eyebrow.
+    eb_f = font(SANS_B, 12)
     t = "THE WORLD IN ONE DAY"
-    d.text(((W - title_f.getlength(t)) / 2, 20), t, font=title_f, fill=INK)
-    d.line([MARGIN, 70, W - MARGIN, 70], fill=INK, width=2)
-    date_f = font(SANS_B, 15)
-    t2 = "THURSDAY 19 NOVEMBER 2026  \u00b7  35 STORIES  \u00b7  7 REGIONS  \u00b7  CLAIMS LABELLED"
-    d.text(((W - date_f.getlength(t2)) / 2, 76), t2, font=date_f, fill=RED)
-    # stat strip: 5 boxes, y=98-134
+    d.text(((W - eb_f.getlength(t)) / 2, 8), t, font=eb_f, fill=RED)
+    date_f = font(SERIF_B, 52)
+    t2 = "Thursday 19 November 2026"
+    d.text(((W - date_f.getlength(t2)) / 2, 26), t2, font=date_f, fill=INK)
+    d.line([MARGIN, 82, W - MARGIN, 82], fill=INK, width=2)
+    # region-count strip: colour-coded tabs, counts computed from news.json
+    from collections import Counter
+    counts = Counter(s["region"] for s in data["featured"] + data["also"])
+    strip_f = font(SANS_B, 11)
+    tabs = []
+    for region in REGION_STRIP_ORDER:
+        label = f"{REGION_STRIP_LABEL[region]} {counts[region]}"
+        tabs.append((label, REGION_COLORS[region],
+                     int(strip_f.getlength(label)) + 16))
+    total_w = sum(w for _, _, w in tabs) + 6 * (len(tabs) - 1)
+    tx = (W - total_w) // 2
+    ty = 86
+    for label, col, w in tabs:
+        d.rectangle([tx, ty, tx + w, ty + 20], fill=col)
+        d.text((tx + 8, ty + 4), label, font=strip_f, fill=(255, 255, 255))
+        tx += w + 6
+    # stat strip: 5 boxes, y=110-138
     stats = data["stats"]
     gap = 8
     sw = (CW - gap * (len(stats) - 1)) // len(stats)
-    sy, sh = 98, 36
+    sy, sh = 110, 28
     for i, s in enumerate(stats):
         sx = MARGIN + i * (sw + gap)
         d.rectangle([sx, sy, sx + sw, sy + sh], fill=CARD, outline=RULE)
-        vf = font(SANS_B, 15)
-        lf = font(SANS, 9)
-        d.text((sx + 7, sy + 3), s["value"], font=vf, fill=INK)
+        vf = font(SANS_B, 13)
+        lf = font(SANS, 8)
+        d.text((sx + 7, sy + 2), s["value"], font=vf, fill=INK)
         lab = trim_one(s["label"], lf, sw - 14)
-        d.text((sx + 7, sy + 21), lab, font=lf, fill=MUTED)
+        d.text((sx + 7, sy + 16), lab, font=lf, fill=MUTED)
+    d.line([MARGIN, 141, W - MARGIN, 141], fill=RULE, width=1)
 
     # ---- Section B: three hero cards, ONE row (145-390)
     heroes = data["featured"][:3]
@@ -987,16 +1258,19 @@ def main():
     mini_ys = [395, 559]
     cf = font(SANS_B, 9)
     chf = font(SANS_B, 12)
-    cmf = font(SANS, 9)
+    csf = font(SANS, 8.5)
+    cmf = font(SANS, 8)
     for i, s in enumerate(cards):
         cx = mini_xs[i % 6]
         cy = mini_ys[i // 6]
         d.rectangle([cx, cy, cx + 156, cy + 156], fill=CARD, outline=RULE)
         MINIS[s["n"]](d, cx + 1, cy + 1, 154, 76)
         num_badge(d, cx + 3, cy + 12, s["n"])
-        d.text((cx + 8, cy + 80), MINI_CAT[s["n"]], font=cf, fill=RED)
-        ty = cy + 93
-        lines = fit_lines(s["headline"], chf, 140, 3)
+        d.text((cx + 8, cy + 79), MINI_CAT[s["n"]], font=cf, fill=RED)
+        # V7: headline max 2 lines, then the news.json summary (1-3 lines),
+        # then one combined place — source line.
+        ty = cy + 90
+        lines = fit_lines(s["headline"], chf, 140, 2)
         for li, ln in enumerate(lines):
             if li == 0 and s["confidence"] == "claim" and ln.startswith("CLAIM:"):
                 d.text((cx + 8, ty), "CLAIM:", font=chf, fill=RED)
@@ -1005,39 +1279,55 @@ def main():
             else:
                 d.text((cx + 8, ty), ln, font=chf, fill=INK)
             ty += 13
-        d.text((cx + 8, cy + 136), trim_one(s["place"], cmf, 140), font=cmf, fill=MUTED)
-        d.text((cx + 8, cy + 146), trim_one(s["source"], cmf, 140), font=cmf, fill=MUTED)
+        ty = cy + 116
+        for ln in fit_lines(s["summary"], csf, 140, 3):
+            d.text((cx + 8, ty), ln, font=csf, fill=(60, 60, 60))
+            ty += 10
+        meta = trim_one(f"{s['place']} \u2014 {s['source']}", cmf, 140)
+        d.text((cx + 8, cy + 147), meta, font=cmf, fill=MUTED)
 
     # ---- Section D: world map + newswire (720-955)
     pins = draw_map(d)
     nf = font(SANS_B, 13)
     d.text((440, 722), "ALSO ON THURSDAY 19 NOVEMBER (20 stories, 2 cols)",
            font=nf, fill=INK)
-    # Newswire: 20 items, 2 columns x 10, 21px item pitch. Two lines per
-    # item (headline bold 11 / place-source regular 9) so headline, place
-    # and source all stay visible at the larger V6 type size.
+    # Newswire: 20 items, 2 columns x 10, 20px item pitch. Two lines per
+    # item (headline bold 11 / place-source regular 9).
     rows = data["also"]
     nwf = font(SANS_B, 11)
     nwm = font(SANS, 9)
     cols = [(436, 276, rows[0:10]), (720, 280, rows[10:20])]
     for nx, colw, items in cols:
         for j, s in enumerate(items):
-            ny = 738 + j * 21
-            head = trim_one(f"{s['n']}. {s['headline']}", nwf, colw)
-            draw_claim_headline(d, nx, ny, head, nwf, colw)
+            ny = 738 + j * 20
+            raw = f"{s['n']}. {s['headline']}"
+            size = 11
+            while size > 9 and font(SANS_B, size).getlength(raw) > colw:
+                size -= 0.5
+            wf = font(SANS_B, size)
+            head = trim_one(raw, wf, colw)
+            draw_claim_headline(d, nx, ny, head, wf, colw)
             meta = trim_one(f"{s['place']} \u2014 {s['source']}", nwm, colw)
             d.text((nx, ny + 11), meta, font=nwm, fill=MUTED)
 
-    # ---- Section E: footer (960-1024)
+    # ---- Section E: footer (960-1024). V7: the date check is a bold
+    # red-bordered box, not small grey footer text.
+    d.rectangle([MARGIN, 960, W - MARGIN, 1008], fill=CARD, outline=RED, width=2)
+    tf = font(SANS_B, 11)
+    d.text((MARGIN + 10, 964), "DATE CHECK", font=tf, fill=RED)
+    _cx = MARGIN + 10 + int(tf.getlength("DATE CHECK")) + 6
+    d.line([_cx, 970, _cx + 4, 975, _cx + 10, 966], fill=RED, width=2)
     ff = font(SANS, 9)
-    f1 = ("Sources: Reuters \u00b7 AP \u00b7 White House \u00b7 ICJ \u00b7 WSJ \u00b7 CNN \u00b7 GOV.UK \u00b7 national wires.")
-    f2 = ("Date-checked: 7 Wed-dated stories removed \u2014 Van Gogh sale, IAEA Yongbyon, US-Venezuela pact, "
-          "EU loan proposal, Taiz water crisis, US carrier departure, Kuwait/Bahrain drones.")
-    f3 = ("CLAIM = unverified claim, never fact. All 35 stories happened or were first reported Thu 19 Nov 2026.")
-    d.line([MARGIN, 960, W - MARGIN, 960], fill=RULE, width=1)
-    d.text((MARGIN, 988), trim_one(f1, ff, CW), font=ff, fill=MUTED)
-    d.text((MARGIN, 1000), trim_one(f2, ff, CW), font=ff, fill=MUTED)
-    d.text((MARGIN, 1012), trim_one(f3, ff, CW), font=ff, fill=MUTED)
+    d.text((MARGIN + 10, 978),
+           "Every story here happened or was first reported Thu 19 Nov 2026. Left out as other days' news:",
+           font=ff, fill=INK)
+    d.text((MARGIN + 10, 990),
+           "Van Gogh sale \u00b7 IAEA Yongbyon \u00b7 US\u2013Venezuela pact \u00b7 EU loan plan \u00b7 Taiz crisis \u00b7 "
+           "US carrier departure \u00b7 Kuwait/Bahrain drones (all Wed 18 Nov).",
+           font=ff, fill=INK)
+    f1 = ("Sources: Reuters \u00b7 AP \u00b7 White House \u00b7 ICJ \u00b7 WSJ \u00b7 CNN \u00b7 GOV.UK \u00b7 national wires.  "
+          "CLAIM = unverified claim, never fact. All 35 stories happened or were first reported Thu 19 Nov 2026.")
+    d.text((MARGIN, 1013), trim_one(f1, ff, CW), font=ff, fill=MUTED)
 
     img.save(HERE / "entry.png", format="PNG", optimize=True)
     n_stories = len(data["featured"]) + len(data["also"])
